@@ -1,107 +1,220 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101211">
-  <meta name="description" content="camou — independent music project. Gleiche Fragen. Neue Perspektiven.">
-  <title>camou — Gleiche Fragen. Neue Perspektiven.</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#101310">
+  <meta name="description" content="Camou — independent music and visual art.">
+  <title>Camou — Music & Visuals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
+
 <body>
-  <header class="site-header">
-    <a class="wordmark" href="#top" aria-label="camou — zur Startseite">camou</a>
-    <button class="menu-toggle" aria-expanded="false" aria-controls="main-nav" aria-label="Menü öffnen">
-      <span></span><span></span>
-    </button>
-    <nav id="main-nav" class="main-nav" aria-label="Hauptnavigation">
-      <a href="#music">Music</a>
-      <a href="#visuals">Visuals</a>
-      <a href="#archive">Archive</a>
-      <a href="#contact">Contact</a>
-    </nav>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="wordmark" href="#home" aria-label="Camou — Home">CAMOU<span>®</span></a>
+
+    <div class="topbar-right">
+      <span class="interaction-hint" id="interactionHint">DRAG TO EXPLORE</span>
+      <button class="menu-toggle" id="menuToggle" aria-label="Menü öffnen" aria-expanded="false">
+        <span></span><span></span>
+      </button>
+    </div>
   </header>
 
-  <main id="top">
-    <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-image" role="img" aria-label="Abstrakte, körnige Licht- und Schattenstruktur"></div>
-      <div class="hero-shade"></div>
-      <div class="hero-content">
-        <p class="eyebrow">New project / 001</p>
-        <h1 id="hero-title">c a m o u</h1>
-        <p class="hero-tagline">Gleiche Fragen.<br>Neue Perspektiven.</p>
-        <a class="play-link" href="#music">
-          <span class="play-icon" aria-hidden="true">▶</span>
-          <span>Zum Release</span>
-        </a>
-      </div>
-      <a class="scroll-cue" href="#music"><span></span>Scroll<br>down</a>
-      <p class="hero-index" aria-hidden="true">01 / 04</p>
-    </section>
+  <nav class="menu" id="menu" aria-hidden="true">
+    <a href="#home" data-target="0">Home <span>01</span></a>
+    <a href="#music" data-target="1">Music <span>02</span></a>
+    <a href="#visuals" data-target="2">Visuals <span>03</span></a>
+    <a href="#archive" data-target="3">Archive <span>04</span></a>
+    <a href="#contact" data-target="4">Contact <span>05</span></a>
+  </nav>
 
-    <section id="music" class="release section-pad" aria-labelledby="release-title">
-      <div class="release-art-wrap">
-        <img class="release-art" src="assets/release.jpg" alt="Abstraktes Covermotiv aus Licht und Schatten">
-        <span class="art-label">camou / 001</span>
-      </div>
-      <div class="release-copy">
-        <p class="eyebrow">Latest release</p>
-        <h2 id="release-title">f r a g m e n t e</h2>
-        <p class="release-description">Ein Song zwischen Licht und Schatten.<br>Zwischen dem, was man sieht – und dem,<br class="desktop-only"> was bleibt.</p>
-        <a class="outline-link" href="#listen">Jetzt hören <span aria-hidden="true">→</span></a>
-        <div id="listen" class="streaming-links" aria-label="Musikplattformen">
-          <!-- Ersetze die allgemeinen Plattform-Links nach Release durch direkte Links zum Song. -->
-          <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">Spotify ↗</a>
-          <a href="https://music.apple.com/" target="_blank" rel="noopener noreferrer">Apple Music ↗</a>
-          <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
-        </div>
-      </div>
-      <div class="release-count" aria-hidden="true">01 / 01 <span>←　 →</span></div>
-    </section>
+  <main>
+    <div class="scene" id="scene">
+      <div class="scene-glow" aria-hidden="true"></div>
+      <div class="orbit orbit-one" aria-hidden="true"></div>
+      <div class="orbit orbit-two" aria-hidden="true"></div>
+      <div class="sphere" id="sphere">
 
-    <section class="feature-grid section-pad" aria-label="Weitere Bereiche">
-      <article id="visuals" class="feature-card">
-        <a class="feature-image-link" href="#visuals-copy" aria-label="Zum Bereich Visuals">
-          <img src="assets/visuals.jpg" alt="Abstrakter Gang mit Licht am Ende" loading="lazy">
-        </a>
-        <p class="eyebrow">02</p>
-        <h2>Visuals</h2>
-        <p id="visuals-copy">Bilder, die bleiben.<br>Momente, die verschwinden.</p>
-        <a class="arrow-link" href="#contact" aria-label="Zu Visuals und Kontakt">→</a>
-      </article>
-      <article id="archive" class="feature-card">
-        <a class="feature-image-link" href="#archive-copy" aria-label="Zum Archiv">
-          <img src="assets/archive.jpg" alt="Abstrakte, verwischte Lichtspuren" loading="lazy">
-        </a>
-        <p class="eyebrow">03</p>
-        <h2>Archive</h2>
-        <p id="archive-copy">Alles hinterlässt Spuren.<br>Ein wachsendes Archiv aus Musik<br>und visuellen Arbeiten.</p>
-        <a class="arrow-link" href="#archive" aria-label="Archiv öffnen">→</a>
-      </article>
-      <article id="contact" class="feature-card">
-        <a class="feature-image-link" href="mailto:" aria-label="Kontakt aufnehmen">
-          <img src="assets/contact.jpg" alt="Licht fällt auf eine strukturierte Wand" loading="lazy">
-        </a>
-        <p class="eyebrow">04</p>
-        <h2>Contact</h2>
-        <p>Für Anfragen und<br>Zusammenarbeit.</p>
-        <!-- Trage hier eine echte Kontaktadresse ein, sobald du eine verwenden möchtest. -->
-        <a class="arrow-link" href="#footer" aria-label="Kontaktinformationen">→</a>
-      </article>
-    </section>
+        <!-- HOME -->
+        <section class="panel panel-home" data-index="0" id="home" aria-label="Home">
+          <div class="panel-inner home-layout">
+            <div class="eyebrow"><span class="status-dot"></span> INDEPENDENT CREATIVE PROJECT</div>
+
+            <div class="home-title-wrap">
+              <p class="pre-title">SOUND / IMAGE / EXPRESSION</p>
+              <h1>CAMOU<span class="title-period">.</span></h1>
+              <p class="home-subtitle">A space between sound and vision.</p>
+            </div>
+
+            <div class="home-bottom">
+              <span>SCROLL THROUGH SPACE<br>DRAG TO ROTATE</span>
+              <span class="home-coordinate">47° 08'  N — 08° 35' E</span>
+            </div>
+          </div>
+          <div class="home-art" aria-hidden="true">
+            <div class="art-ring ring-a"></div>
+            <div class="art-ring ring-b"></div>
+            <div class="art-core"></div>
+            <div class="art-orbit"></div>
+          </div>
+        </section>
+
+        <!-- MUSIC -->
+        <section class="panel panel-music" data-index="1" id="music" aria-label="Music">
+          <div class="panel-inner">
+            <div class="section-topline">
+              <span>01 / SOUND</span>
+              <span>SELECTED RELEASE</span>
+            </div>
+
+            <div class="music-content">
+              <div class="release-art" aria-label="Abstrakte Covergrafik">
+                <div class="cover-shape cover-shape-one"></div>
+                <div class="cover-shape cover-shape-two"></div>
+                <div class="cover-grain"></div>
+                <span class="cover-label">CAMOU<br>001</span>
+              </div>
+
+              <div class="release-info">
+                <p class="eyebrow">LATEST RELEASE</p>
+                <h2>fragmente</h2>
+                <p class="release-description">
+                  A collection of sounds, moments and fragments.
+                  An ongoing exploration of atmosphere and emotion.
+                </p>
+                <div class="release-meta">
+                  <span>CAMOU</span>
+                  <span>2025</span>
+                  <span>INDEPENDENT</span>
+                </div>
+
+                <div class="stream-links">
+                  <a href="https://open.spotify.com/" target="_blank" rel="noopener noreferrer">SPOTIFY ↗</a>
+                  <a href="https://music.apple.com/" target="_blank" rel="noopener noreferrer">APPLE MUSIC ↗</a>
+                  <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YOUTUBE ↗</a>
+                </div>
+              </div>
+            </div>
+
+            <div class="section-footer"><span>LISTEN / FEEL / REPEAT</span><span>CAMOU — MUSIC</span></div>
+          </div>
+        </section>
+
+        <!-- VISUALS -->
+        <section class="panel panel-visuals" data-index="2" id="visuals" aria-label="Visuals">
+          <div class="panel-inner">
+            <div class="section-topline">
+              <span>02 / IMAGE</span>
+              <span>VISUAL EXPERIMENTS</span>
+            </div>
+
+            <div class="visuals-heading">
+              <p class="eyebrow">A STUDY OF FORM</p>
+              <h2>Visuals<span>.</span></h2>
+              <p>Images, textures and visual notes from the Camou universe.</p>
+            </div>
+
+            <div class="visual-grid">
+              <div class="visual-tile visual-tile-large">
+                <div class="visual-abstract abstract-one"></div>
+                <span>FORM STUDY — 001</span>
+              </div>
+              <div class="visual-tile">
+                <div class="visual-abstract abstract-two"></div>
+                <span>TEXTURE — 002</span>
+              </div>
+              <div class="visual-tile">
+                <div class="visual-abstract abstract-three"></div>
+                <span>MOTION — 003</span>
+              </div>
+            </div>
+
+            <div class="section-footer"><span>SELECTED VISUALS</span><span>CAMOU — IMAGE</span></div>
+          </div>
+        </section>
+
+        <!-- ARCHIVE -->
+        <section class="panel panel-archive" data-index="3" id="archive" aria-label="Archive">
+          <div class="panel-inner">
+            <div class="section-topline">
+              <span>03 / MEMORY</span>
+              <span>PAST & PRESENT</span>
+            </div>
+
+            <div class="archive-heading">
+              <p class="eyebrow">COLLECTED OVER TIME</p>
+              <h2>Archive<span>.</span></h2>
+            </div>
+
+            <div class="archive-list">
+              <article class="archive-item">
+                <span class="archive-number">001</span>
+                <div><h3>fragmente</h3><p>Music / Release</p></div>
+                <span class="archive-year">2025</span>
+              </article>
+              <article class="archive-item">
+                <span class="archive-number">002</span>
+                <div><h3>Visual notes</h3><p>Image / Experiments</p></div>
+                <span class="archive-year">2025</span>
+              </article>
+              <article class="archive-item">
+                <span class="archive-number">003</span>
+                <div><h3>In progress</h3><p>Sound / Research</p></div>
+                <span class="archive-year">ONGOING</span>
+              </article>
+            </div>
+
+            <div class="section-footer"><span>NOTHING IS EVER FINISHED</span><span>CAMOU — ARCHIVE</span></div>
+          </div>
+        </section>
+
+        <!-- CONTACT -->
+        <section class="panel panel-contact" data-index="4" id="contact" aria-label="Contact">
+          <div class="panel-inner contact-layout">
+            <div class="section-topline">
+              <span>04 / CONNECTION</span>
+              <span>GET IN TOUCH</span>
+            </div>
+
+            <div class="contact-main">
+              <p class="eyebrow">LET'S CONNECT</p>
+              <h2>Say<br>hello<span>.</span></h2>
+              <a class="contact-email" href="mailto:camou.kontakt@gmail.com">
+                CAMOU.KONTAKT@GMAIL.COM ↗
+              </a>
+            </div>
+
+            <div class="contact-bottom">
+              <div class="social-links">
+                <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">INSTAGRAM ↗</a>
+                <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YOUTUBE ↗</a>
+              </div>
+              <span>BASED IN SWITZERLAND</span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
   </main>
 
-  <footer id="footer" class="site-footer">
-    <p>camou — independent artist / Switzerland</p>
-    <div class="footer-links">
-      <a href="#contact" aria-label="Instagram-Link später ergänzen">Instagram</a>
-      <a href="#music" aria-label="Spotify">Spotify</a>
-      <a href="#contact" aria-label="Kontakt">Contact</a>
+  <footer class="page-footer">
+    <span>© CAMOU 2025</span>
+    <div class="progress-wrap">
+      <span id="currentSection">HOME</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="sectionCounter">01 / 05</span>
     </div>
+    <span>AN ENDLESS SPACE</span>
   </footer>
+
+  <div class="drag-cursor" id="dragCursor" aria-hidden="true">DRAG</div>
 </body>
 </html>
