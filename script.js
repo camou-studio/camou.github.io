@@ -1,7 +1,79 @@
 
 import * as THREE from "three";
 
-/* CAMOU – EXPLORE GLOBE
+/* =========================================
+   CAMOU PIXEL-INTRO – STARTET SOFORT
+   Der Fortschritt laeuft parallel zu Laden
+   und Berechnung. Nur HOME-Inhalte werden
+   pixelweise aufgebaut; Szene und Cosmos
+   bleiben davon unberuehrt.
+========================================= */
+
+if (document.body) {
+  document.body.classList.add("camou-intro-active");
+}
+
+const camouIntroStartedAt = performance.now();
+let camouIntroReadyAt = null;
+let camouIntroReadyBase = 0;
+let camouIntroDone = false;
+let camouIntroLastStep = -1;
+
+const CAMOU_INTRO_LOAD_MS = 5200;
+const CAMOU_INTRO_FINISH_MS = 900;
+const CAMOU_INTRO_PIXEL_W = 48;
+const CAMOU_INTRO_PIXEL_H = 38;
+
+const camouIntroPixelCanvas = document.createElement("canvas");
+camouIntroPixelCanvas.width = CAMOU_INTRO_PIXEL_W;
+camouIntroPixelCanvas.height = CAMOU_INTRO_PIXEL_H;
+const camouIntroPixelContext = camouIntroPixelCanvas.getContext("2d", {
+  willReadFrequently: true
+});
+
+const camouIntroThresholds = new Float32Array(
+  CAMOU_INTRO_PIXEL_W * CAMOU_INTRO_PIXEL_H
+);
+
+for (let y = 0; y < CAMOU_INTRO_PIXEL_H; y++) {
+  for (let x = 0; x < CAMOU_INTRO_PIXEL_W; x++) {
+    const i = y * CAMOU_INTRO_PIXEL_W + x;
+    const wave =
+      Math.sin(x * 12.9898 + y * 78.233) *
+      Math.cos(x * 4.1414 - y * 21.171);
+    const noise = (wave * 43758.5453) % 1;
+    const normalized = Math.abs(noise);
+    const diagonal = (x / CAMOU_INTRO_PIXEL_W + y / CAMOU_INTRO_PIXEL_H) * 0.5;
+    camouIntroThresholds[i] = clamp(
+      normalized * 0.72 + diagonal * 0.28,
+      0,
+      1
+    );
+  }
+}
+
+function camouIntroProgress(now = performance.now()) {
+  const loadingProgress = Math.min(
+    0.88,
+    Math.max(0, (now - camouIntroStartedAt) / CAMOU_INTRO_LOAD_MS) * 0.88
+  );
+
+  if (!camouHomeReady) return loadingProgress;
+
+  if (camouIntroReadyAt === null) {
+    camouIntroReadyAt = now;
+    camouIntroReadyBase = loadingProgress;
+  }
+
+  const finish = smooth(
+    (now - camouIntroReadyAt) / CAMOU_INTRO_FINISH_MS
+  );
+
+  return camouIntroReadyBase + (1 - camouIntroReadyBase) * finish;
+}
+
+
+/* camOu – EXPLORE GLOBE
    Five freely positioned environments
    Navigation / Video / Visuals / Compass / Modals
 */
@@ -91,63 +163,6 @@ const sections = [
 
 const $ = id => document.getElementById(id);
 
-function camouSetIntroProgress(value, status) {
-  const progress = $("camou-intro-progress");
-  const percent = $("camou-intro-percent");
-  const label = $("camou-intro-status");
-  const amount = Math.max(0, Math.min(100, Math.round(value)));
-  if (progress) progress.style.width = `${amount}%`;
-  if (percent) percent.textContent = `${String(amount).padStart(2, "0")}%`;
-  if (label && status) label.textContent = status;
-}
-
-function camouFinishIntro() {
-  const intro = $("camou-intro");
-  const pixelLayer = $("camou-pixel-reveal");
-  if (!intro || intro.dataset.transitionStarted === "true") return;
-
-  intro.dataset.transitionStarted = "true";
-  camouSetIntroProgress(100, "STARTSEITE WIRD SICHTBAR");
-  document.body.classList.remove("camou-loading");
-  document.body.classList.add("camou-intro-transitioning");
-
-  // HOME ist bis hierhin bewusst nur mit seiner Überschrift sichtbar.
-  // Jetzt wird die vollständige HOME-Fläche auf derselben Kugel aufgebaut;
-  // das Pixelraster gibt sie anschließend schrittweise frei.
-  if (globeContext && globeTexture && camouHomeImage) {
-    drawWrappedPanel(globeContext, 0, camouHomeImage, false);
-    globeTexture.needsUpdate = true;
-    sceneNeedsRender = true;
-  }
-
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const cells = [];
-  if (pixelLayer) {
-    pixelLayer.replaceChildren();
-    const columns = 18;
-    const rows = 11;
-    const total = columns * rows;
-    for (let i = 0; i < total; i++) {
-      const cell = document.createElement("span");
-      cell.className = "camou-pixel-reveal__cell";
-      cell.style.transitionDelay = reducedMotion ? "0ms" : `${((i * 37) % total) * 9}ms`;
-      pixelLayer.appendChild(cell);
-      cells.push(cell);
-    }
-    requestAnimationFrame(() => {
-      cells.forEach(cell => cell.classList.add("is-open"));
-    });
-  }
-
-  const revealDuration = reducedMotion ? 20 : 1750;
-  window.setTimeout(() => {
-    if (pixelLayer) pixelLayer.remove();
-    intro.remove();
-    document.body.classList.remove("camou-intro-transitioning");
-    document.body.classList.add("camou-intro-done");
-  }, revealDuration);
-}
-
 const clamp = (v, min, max) =>
   Math.max(min, Math.min(max, v));
 
@@ -176,7 +191,7 @@ const navButtons = [
 ];
 
 const mobile = window.matchMedia(
-  "(max-width:700px)"
+  "(hover: none) and (pointer: coarse)"
 ).matches;
 
 const defaultZoom = mobile
@@ -211,7 +226,7 @@ const renderer = new THREE.WebGLRenderer({
 
 renderer.setPixelRatio(
   Math.min(
-    window.devicePixelRatio,
+    window.devicePixelRatio || 1,
     mobile ? 1.5 : 2
   )
 );
@@ -708,7 +723,6 @@ let pinchAngle = 0;
 let globeCanvas = null;
 let globeContext = null;
 let globeTexture = null;
-let camouHomeImage = null;
 let baseTextureCanvas = null;
 let sceneNeedsRender = true;
 
@@ -1029,7 +1043,7 @@ const SOCIAL = [
   {
     name: "INSTAGRAM",
     angle: Math.PI,
-    url: "https://www.instagram.com/b3nn3t"
+    url: "https://www.instagram.com/b333nn3t"
   }
 ];
 
@@ -2317,23 +2331,13 @@ function paintPhoto(
   ctx.restore();
 }
 
-function drawPanel(ctx, index, image, introOnly = false) {
+function drawPanel(ctx, index, image) {
   const section = sections[index];
   const p = PLACES[index];
   const textX = p.textX;
 
   ctx.save();
   ctx.textAlign = "center";
-
-  if (introOnly) {
-    ctx.fillStyle = "#f0f2eb";
-    ctx.font = "300 58px Manrope, Arial";
-    section.title.forEach((line, i) => {
-      ctx.fillText(line, textX, -247 + i * 68, 600);
-    });
-    ctx.restore();
-    return;
-  }
 
   // Dezente Linie statt rechteckiger Bereichsgrenze.
   ctx.strokeStyle = "rgba(207,226,200,.27)";
@@ -2431,13 +2435,13 @@ function drawPanel(ctx, index, image, introOnly = false) {
   ctx.restore();
 }
 
-function drawWrappedPanel(ctx, index, image, introOnly = false) {
+function drawWrappedPanel(ctx, index, image) {
   eachIslandInstance(
     index,
     (x, y, p) => {
       ctx.save();
       islandTransform(ctx, x, y, p);
-      drawPanel(ctx, index, image, introOnly);
+      drawPanel(ctx, index, image);
       ctx.restore();
     }
   );
@@ -2506,8 +2510,6 @@ function refreshEchoesTexture() {
 
 
 async function createGlobeTexture() {
-  camouSetIntroProgress(18, "HOME-BILD WIRD GELADEN");
-
   // Die vier VISUALS-Slides behalten feste Positionen.
   // Der erste Slide wird erst nach HOME geladen.
   visualImages = new Array(ASSETS.visualSlides.length).fill(null);
@@ -2524,10 +2526,7 @@ async function createGlobeTexture() {
 
   // Beim Start wird nur das HOME-Bild angefordert.
   const homeImage = await loadImage(ASSETS.home);
-  camouHomeImage = homeImage;
-  camouSetIntroProgress(58, "KUGEL WIRD AUFGEBAUT");
   await canvasFontsReady;
-  camouSetIntroProgress(82, "LETZTE DETAILS");
 
   globeCanvas = document.createElement("canvas");
   globeCanvas.width = MAP_W;
@@ -2537,7 +2536,7 @@ async function createGlobeTexture() {
   drawBackground(globeContext, MAP_W, MAP_H);
 
   // Als erstes nur HOME auf der V2-Kugel bereitstellen.
-  drawWrappedPanel(globeContext, 0, homeImage, true);
+  drawWrappedPanel(globeContext, 0, homeImage);
 
   globeTexture = new THREE.CanvasTexture(globeCanvas);
   globeTexture.colorSpace = THREE.SRGBColorSpace;
@@ -2765,10 +2764,6 @@ createGlobeTexture()
 
     camouHomeReady = true;
 
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => camouFinishIntro());
-    });
-
     // Sehr fruehe Navigationswünsche berücksichtigen.
     for (let index = 1; index < sections.length; index++) {
       if (camouSectionLoadState[index].urgent) {
@@ -2788,8 +2783,6 @@ createGlobeTexture()
       "CAMOU: Fehler beim Laden der Kugeltextur",
       error
     );
-    camouSetIntroProgress(100, "STARTSEITE WIRD GEÖFFNET");
-    requestAnimationFrame(() => requestAnimationFrame(() => camouFinishIntro()));
   });
 
 /* =========================================
@@ -2954,6 +2947,27 @@ const spotifyPlayer = $("spotify-modal-player");
 const spotifyClose = $("spotify-modal-close");
 
 let spotifyOpen = false;
+let lastModalTrigger = null;
+const experienceRoot = document.querySelector(".experience");
+
+function setModalBackgroundInert(isInert) {
+  if (experienceRoot) experienceRoot.inert = isInert;
+}
+
+function rememberModalTrigger() {
+  lastModalTrigger = document.activeElement instanceof HTMLElement
+    ? document.activeElement
+    : null;
+  setModalBackgroundInert(true);
+}
+
+function restoreModalFocus() {
+  setModalBackgroundInert(false);
+  if (lastModalTrigger?.isConnected) {
+    lastModalTrigger.focus({ preventScroll: true });
+  }
+  lastModalTrigger = null;
+}
 
 if (spotifyModal) {
   document.body.appendChild(spotifyModal);
@@ -2962,6 +2976,7 @@ if (spotifyModal) {
 function openSpotifyModal() {
   if (!spotifyModal || spotifyOpen) return;
 
+  rememberModalTrigger();
   spotifyOpen = true;
 
   velocityX = 0;
@@ -3000,6 +3015,7 @@ function closeSpotifyModal() {
   );
 
   spotifyPlayer?.removeAttribute("src");
+  restoreModalFocus();
 }
 
 spotifyClose?.addEventListener(
@@ -3049,6 +3065,7 @@ if (contactModal) {
 function openContactModal() {
   if (!contactModal || contactOpen) return;
 
+  rememberModalTrigger();
   contactOpen = true;
 
   velocityX = 0;
@@ -3079,6 +3096,7 @@ function closeContactModal() {
   document.body.classList.remove(
     "contact-dialog-open"
   );
+  restoreModalFocus();
 }
 
 contactClose?.addEventListener(
@@ -3138,7 +3156,7 @@ contactForm?.addEventListener(
 
       if (contactStatus) {
         contactStatus.textContent =
-          "Übertragung abgeschlossen. Empfang nicht bestätigt.";
+          "Anfrage übermittelt. Der tatsächliche Empfang kann hier nicht bestätigt werden.";
       }
     } catch (error) {
       console.error(
@@ -3447,11 +3465,21 @@ stage.addEventListener(
       event.target.closest(".zoom-controls")
     ) return;
 
-        if (camouWorldFlight) return;
+    if (camouWorldFlight) return;
+
+    // Browser-Zoom durch Zwei-Finger-Geste verhindern
+    if (event.ctrlKey) {
+      event.preventDefault();
+
+      setZoom(
+        currentZoom + event.deltaY * 0.008
+      );
+
+      return;
+    }
 
     setZoom(
-      currentZoom +
-      event.deltaY * 0.008
+      currentZoom + event.deltaY * 0.008
     );
   },
   { passive: false }
@@ -3796,11 +3824,34 @@ window.addEventListener(
       } else if (spotifyOpen) {
         closeSpotifyModal();
       }
-
       return;
     }
 
-    if (spotifyOpen || contactOpen) return;
+    if (spotifyOpen || contactOpen) {
+      if (event.key === "Tab") {
+        const activeModal = contactOpen ? contactModal : spotifyModal;
+        const focusable = [...activeModal.querySelectorAll(
+          'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'
+        )].filter(el => el.getClientRects().length > 0);
+
+        if (!focusable.length) {
+          event.preventDefault();
+          activeModal.focus();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+      return;
+    }
 
     if (
       ["INPUT", "TEXTAREA", "SELECT"].includes(
@@ -3938,8 +3989,32 @@ function camouHorizontalDirection() {
   return Math.cos(tilt) < 0 ? -1 : 1;
 }
 
+let camouAnimationFrameId = 0;
+
 function animate(now = 0) {
-  requestAnimationFrame(animate);
+  if (document.hidden) {
+    camouAnimationFrameId = 0;
+    return;
+  }
+
+  camouAnimationFrameId = requestAnimationFrame(animate);
+
+  // Pixelaufbau waehrend der Vorbereitung weiterlaufen lassen.
+  if (!camouIntroDone && CAMOU_V2_CANVASES[0]) {
+    const progress = camouIntroProgress(now);
+    const step = Math.floor(progress * 100);
+
+    if (step !== camouIntroLastStep) {
+      camouIntroLastStep = step;
+      refreshIsland(0);
+    }
+
+    if (progress >= 1) {
+      camouIntroDone = true;
+      document.body.classList.remove("camou-intro-active");
+      refreshIsland(0);
+    }
+  }
 
   if (camouWorldFlight) camouUpdateWorldFlight(now);
 
@@ -4198,7 +4273,19 @@ camouUpdateExplorePlanetSize();
   updateIndicator();
 }
 
-requestAnimationFrame(animate);
+camouAnimationFrameId = requestAnimationFrame(animate);
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    if (camouAnimationFrameId) {
+      cancelAnimationFrame(camouAnimationFrameId);
+      camouAnimationFrameId = 0;
+    }
+  } else if (!camouAnimationFrameId) {
+    sceneNeedsRender = true;
+    camouAnimationFrameId = requestAnimationFrame(animate);
+  }
+});
 
 /* =========================================
    RESIZE
@@ -4221,7 +4308,7 @@ function resize() {
 
 renderer.setPixelRatio(
   Math.min(
-    window.devicePixelRatio,
+    window.devicePixelRatio || 1,
     mobile ? 1.5 : 2
   )
 );
@@ -4859,6 +4946,8 @@ if (side) {
    EINZELNEN BEREICH AKTUALISIEREN
 ========================================= */
 
+let camouIntroSourceCanvas = null;
+
 refreshIsland = function(index) {
   const canvas = CAMOU_V2_CANVASES[index];
   const texture = CAMOU_V2_TEXTURES[index];
@@ -4866,30 +4955,72 @@ refreshIsland = function(index) {
   if (!canvas || !texture) return;
 
   const ctx = canvas.getContext("2d");
+  const image = index === 2
+    ? visualImages[visualIndex]
+    : CAMOU_V2_IMAGES[index];
 
-  ctx.clearRect(
-    0,
-    0,
-    CAMOU_V2_W,
-    CAMOU_V2_H
-  );
+  if (index !== 0 || camouIntroDone) {
+    ctx.clearRect(0, 0, CAMOU_V2_W, CAMOU_V2_H);
+    ctx.save();
+    ctx.translate(CAMOU_V2_W / 2, CAMOU_V2_H / 2);
+    drawPanel(ctx, index, image);
+    ctx.restore();
+  } else {
+    // HOME zuerst vollstaendig in eine interne Flaeche zeichnen.
+    // Anschliessend werden ihre Pixelzellen progressiv freigegeben.
+    if (!camouIntroSourceCanvas) {
+      camouIntroSourceCanvas = document.createElement("canvas");
+      camouIntroSourceCanvas.width = CAMOU_V2_W;
+      camouIntroSourceCanvas.height = CAMOU_V2_H;
+    }
 
-  ctx.save();
+    const sourceCtx = camouIntroSourceCanvas.getContext("2d");
+    sourceCtx.clearRect(0, 0, CAMOU_V2_W, CAMOU_V2_H);
+    sourceCtx.save();
+    sourceCtx.translate(CAMOU_V2_W / 2, CAMOU_V2_H / 2);
+    drawPanel(sourceCtx, 0, image);
+    sourceCtx.restore();
 
-  ctx.translate(
-    CAMOU_V2_W / 2,
-    CAMOU_V2_H / 2
-  );
+    const progress = camouIntroProgress();
+    const small = camouIntroPixelContext;
+    small.clearRect(0, 0, CAMOU_INTRO_PIXEL_W, CAMOU_INTRO_PIXEL_H);
+    small.imageSmoothingEnabled = true;
+    small.drawImage(
+      camouIntroSourceCanvas,
+      0, 0, CAMOU_INTRO_PIXEL_W, CAMOU_INTRO_PIXEL_H
+    );
 
-  drawPanel(
-    ctx,
-    index,
-    index === 2
-      ? visualImages[visualIndex]
-      : CAMOU_V2_IMAGES[index]
-  );
+    const pixels = small.getImageData(
+      0, 0, CAMOU_INTRO_PIXEL_W, CAMOU_INTRO_PIXEL_H
+    );
 
-  ctx.restore();
+    for (let i = 0; i < camouIntroThresholds.length; i++) {
+      if (camouIntroThresholds[i] > progress) {
+        pixels.data[i * 4 + 3] = 0;
+      }
+    }
+
+    small.putImageData(pixels, 0, 0);
+
+    ctx.clearRect(0, 0, CAMOU_V2_W, CAMOU_V2_H);
+    ctx.save();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(
+      camouIntroPixelCanvas,
+      0, 0, CAMOU_V2_W, CAMOU_V2_H
+    );
+
+    // Der Schriftzug camOu bleibt vom ersten Moment an klar lesbar.
+    ctx.translate(CAMOU_V2_W / 2, CAMOU_V2_H / 2);
+    const homePlace = PLACES[0];
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#f0f2eb";
+    ctx.font = "300 58px Manrope, Arial";
+    sections[0].title.forEach((line, i) => {
+      ctx.fillText(line, homePlace.textX, -247 + i * 68, 600);
+    });
+    ctx.restore();
+  }
 
   texture.needsUpdate = true;
   sceneNeedsRender = true;
@@ -5434,7 +5565,7 @@ function camouDrawSecondProject(ctx, image) {
   ctx.fillStyle = "rgba(220,216,236,.78)";
 
   ctx.fillText(
-    "ZURUECK: NAVIGATION ODER BUTTON",
+    "ZURÜCK: NAVIGATION ODER BUTTON",
     0, 265
   );
 
@@ -5562,7 +5693,7 @@ const camouReturnButton =
 
 camouReturnButton.type = "button";
 camouReturnButton.textContent =
-  "← ZURUECK ZU CAMOU";
+  "← ZURÜCK ZU camOu";
 
 camouReturnButton.setAttribute(
   "aria-label",
@@ -6419,3 +6550,240 @@ handleGlobeClick = function(event) {
 camouCreatePortal();
 
 /* ENDE CAMOU PROJEKTPLANET 02 */
+
+
+/* ============================================================
+   CAMOU – TRACKLIST + COUNTDOWN
+   Zusaetzliche freie Flaechen auf der oberen/unteren Kugelseite
+============================================================ */
+
+const CAMOU_TRACKS_PLACE = {
+  lon: 72,
+  lat: 48,
+  tiltR: -13 * RAD
+};
+
+const CAMOU_COUNTDOWN_PLACE = {
+  lon: 72,
+  lat: -43,
+  tiltR: 8 * RAD
+};
+
+function camouCreateOverlayCanvas(place) {
+  const canvas = document.createElement("canvas");
+  canvas.width = CAMOU_V2_W;
+  canvas.height = CAMOU_V2_H;
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = Math.min(
+    renderer.capabilities.getMaxAnisotropy(),
+    4
+  );
+
+  const mesh = new THREE.Mesh(
+    camouV2Geometry(place),
+    new THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      depthTest: true,
+      depthWrite: false,
+      side: THREE.DoubleSide
+    })
+  );
+
+  mesh.renderOrder = 3;
+  globeGroup.add(mesh);
+
+  return { canvas, texture, mesh };
+}
+
+const camouTracksOverlay = camouCreateOverlayCanvas(CAMOU_TRACKS_PLACE);
+const camouCountdownOverlay = camouCreateOverlayCanvas(CAMOU_COUNTDOWN_PLACE);
+
+function camouDrawTracklist() {
+  const { canvas, texture } = camouTracksOverlay;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.textBaseline = "middle";
+
+  // Unruhiger, handgezeichneter Orbit als visuelle Klammer.
+  ctx.save();
+  ctx.strokeStyle = "rgba(224,235,220,.36)";
+  ctx.lineWidth = 1.4;
+  ctx.setLineDash([3, 10, 18, 6]);
+  ctx.beginPath();
+  ctx.ellipse(0, 0, 350, 270, -0.24, -0.12, Math.PI * 1.83);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.strokeStyle = "rgba(224,235,220,.22)";
+  ctx.beginPath();
+  ctx.ellipse(10, -2, 285, 205, 0.34, 0.25, Math.PI * 1.78);
+  ctx.stroke();
+  ctx.restore();
+
+  // Kleine Stern-/Kreuzmarken, bewusst unregelmaessig verteilt.
+  const marks = [
+    [-365, -220, 9], [330, -270, 7], [375, 115, 10],
+    [-330, 260, 7], [35, -315, 8], [180, 290, 6],
+    [-70, 285, 5]
+  ];
+  for (const [x, y, size] of marks) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(0.4);
+    ctx.strokeStyle = "rgba(230,239,226,.72)";
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-size, 0);
+    ctx.lineTo(size, 0);
+    ctx.moveTo(0, -size);
+    ctx.lineTo(0, size);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  ctx.textAlign = "center";
+  ctx.fillStyle = "rgba(224,235,220,.68)";
+  ctx.font = "500 17px 'DM Mono', monospace";
+  ctx.save();
+  ctx.translate(-8, -18);
+  ctx.rotate(-0.08);
+  ctx.fillText("TRACKS / FRAGMENTE", 0, 0);
+  ctx.restore();
+
+  const tracks = [
+    { n: "3", title: "verstand gg. Leib", x: -205, y: -175, r: -0.10, size: 29 },
+    { n: "2", title: "mfg", x: 70, y: -255, r: 0.13, size: 35 },
+    { n: "7", title: "SCHOTTER", x: 250, y: -145, r: -0.16, size: 31 },
+    { n: "5", title: "06:00, 06:05, 06:10, 06:15…", x: 245, y: 55, r: 0.08, size: 18 },
+    { n: "8", title: "suchtbedingt (outro)", x: 105, y: 235, r: -0.11, size: 24 },
+    { n: "", title: "wie die jungs", x: -145, y: 235, r: 0.12, size: 27 },
+    { n: "1", title: "sanktgallen (intro)", x: -280, y: 35, r: -0.17, size: 23 },
+    { n: "6", title: "moerder", x: -20, y: 80, r: 0.06, size: 33 }
+  ];
+
+  for (const track of tracks) {
+    ctx.save();
+    ctx.translate(track.x, track.y);
+    ctx.rotate(track.r);
+    ctx.textAlign = "left";
+    ctx.fillStyle = "rgba(204,220,202,.72)";
+    ctx.font = "500 15px 'DM Mono', monospace";
+    if (track.n) ctx.fillText(track.n.padStart(2, "0"), -8, -21);
+
+    ctx.fillStyle = "#F2F0E8";
+    ctx.font = `500 ${track.size}px Manrope, Arial, sans-serif`;
+    ctx.shadowColor = "rgba(0,0,0,.48)";
+    ctx.shadowBlur = 9;
+    ctx.fillText(track.title, 18, 0, 430);
+    ctx.shadowBlur = 0;
+
+    ctx.strokeStyle = "rgba(219,233,216,.45)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(18, 17);
+    ctx.lineTo(Math.min(245, 26 + track.title.length * track.size * 0.34), 17);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Kleine handschriftliche Akzentlinie.
+  ctx.save();
+  ctx.translate(5, 5);
+  ctx.rotate(-0.18);
+  ctx.strokeStyle = "rgba(230,239,225,.58)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(-70, -5);
+  ctx.bezierCurveTo(-15, -24, 28, 20, 88, -8);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+  texture.needsUpdate = true;
+  sceneNeedsRender = true;
+}
+
+const CAMOU_COUNTDOWN_TARGET = new Date(2026, 10, 27, 0, 0, 0, 0);
+
+function camouDrawCountdown() {
+  const { canvas, texture } = camouCountdownOverlay;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width;
+  const h = canvas.height;
+  const remaining = Math.max(0, CAMOU_COUNTDOWN_TARGET.getTime() - Date.now());
+
+  const totalSeconds = Math.floor(remaining / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.translate(w / 2, h / 2);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  // Offene, technische Rahmung statt einer geschlossenen Box.
+  ctx.strokeStyle = "rgba(224,236,222,.52)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(-300, -150);
+  ctx.lineTo(-235, -150);
+  ctx.moveTo(235, -150);
+  ctx.lineTo(300, -150);
+  ctx.moveTo(-300, 150);
+  ctx.lineTo(-235, 150);
+  ctx.moveTo(235, 150);
+  ctx.lineTo(300, 150);
+  ctx.stroke();
+
+  ctx.fillStyle = "rgba(221,234,218,.72)";
+  ctx.font = "500 18px 'DM Mono', monospace";
+  ctx.fillText("COUNTDOWN  /  NEXT TRANSMISSION", 0, -104);
+
+  ctx.fillStyle = "#F4F1E8";
+  ctx.shadowColor = "rgba(0,0,0,.48)";
+  ctx.shadowBlur = 12;
+  ctx.font = "300 112px Manrope, Arial, sans-serif";
+  ctx.fillText(String(days).padStart(2, "0"), 0, 8);
+  ctx.shadowBlur = 0;
+
+  ctx.fillStyle = "rgba(226,237,222,.82)";
+  ctx.font = "500 20px 'DM Mono', monospace";
+  ctx.fillText("TAGE", 0, 67);
+
+  ctx.fillStyle = "#F4F1E8";
+  ctx.font = "500 30px 'DM Mono', monospace";
+  ctx.fillText(
+    `${String(hours).padStart(2, "0")} : ${String(minutes).padStart(2, "0")} : ${String(seconds).padStart(2, "0")}`,
+    0,
+    112
+  );
+
+  ctx.fillStyle = "rgba(221,234,218,.70)";
+  ctx.font = "500 17px 'DM Mono', monospace";
+  ctx.fillText("27 . 11 . 2026", 0, 174);
+
+  ctx.restore();
+  texture.needsUpdate = true;
+  sceneNeedsRender = true;
+}
+
+camouDrawTracklist();
+camouDrawCountdown();
+
+// Nur die Countdown-Flaeche wird sekundenweise neu gezeichnet.
+const camouCountdownTimer = window.setInterval(
+  camouDrawCountdown,
+  1000
+);
+
+/* ENDE CAMOU – TRACKLIST + COUNTDOWN */
