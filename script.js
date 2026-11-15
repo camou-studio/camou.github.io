@@ -102,79 +102,11 @@ const smooth = t => {
   return t * t * (3 - 2 * t);
 };
 
-// Schnelle Arcus-Cosinus-Naeherung fuer die Hintergrundpixel.
-function fastAcos(x) {
-  x = clamp(x, -1, 1);
-  const a = Math.abs(x);
-  const result =
-    (((-0.0187293 * a + 0.0742610) * a - 0.2121144) * a + 1.5707288) *
-    Math.sqrt(1 - a);
-  return x >= 0 ? result : Math.PI - result;
-}
-
 const wrapAngle = a =>
   Math.atan2(Math.sin(a), Math.cos(a));
 
 const distance = (a, b) =>
   Math.hypot(a.x - b.x, a.y - b.y);
-
-// Einstiegshilfe: Fortschritt wird durch echte Vorarbeiten aktualisiert.
-let camouIntroActive = true;
-let camouIntroPixelStage = -1;
-let camouIntroProgress = 0;
-
-const camouIntroRoot = document.getElementById("camou-intro");
-const camouIntroFill = document.getElementById("camou-intro-progress-fill");
-const camouIntroStatus = document.getElementById("camou-intro-status");
-const camouIntroPercent = document.getElementById("camou-intro-percent");
-
-function camouNextFrame() {
-  return new Promise(resolve => requestAnimationFrame(resolve));
-}
-
-function camouDelay(ms) {
-  return new Promise(resolve => window.setTimeout(resolve, ms));
-}
-
-function camouSetIntroProgress(value, label) {
-  camouIntroProgress = Math.max(
-    camouIntroProgress,
-    Math.min(99, Math.round(value))
-  );
-
-  if (camouIntroFill) {
-    camouIntroFill.style.width = `${camouIntroProgress}%`;
-  }
-  if (camouIntroPercent) {
-    camouIntroPercent.textContent = `${String(camouIntroProgress).padStart(2, "0")}%`;
-  }
-  if (label && camouIntroStatus) {
-    camouIntroStatus.textContent = label;
-  }
-}
-
-function camouStartIntroUI() {
-  stage?.classList.add("camou-loading");
-  navButtons.forEach(button => { button.disabled = true; });
-  document.querySelectorAll(".zoom-controls button").forEach(button => {
-    button.disabled = true;
-  });
-  camouSetIntroProgress(2, "KOSMOS WIRD VORBEREITET");
-}
-
-function camouFinishIntroUI() {
-  camouIntroActive = false;
-  stage?.classList.remove("camou-loading");
-  navButtons.forEach(button => { button.disabled = false; });
-  document.querySelectorAll(".zoom-controls button").forEach(button => {
-    button.disabled = false;
-  });
-
-  if (camouIntroRoot) {
-    camouIntroRoot.classList.add("is-finished");
-    window.setTimeout(() => camouIntroRoot.remove(), 500);
-  }
-}
 
 /* =========================================
    DOM UND THREE.JS
@@ -185,8 +117,6 @@ const stage = document.querySelector(".globe-stage");
 const navButtons = [
   ...document.querySelectorAll(".nav-link")
 ];
-
-camouStartIntroUI();
 
 const mobile = window.matchMedia(
   "(hover: none) and (pointer: coarse)"
@@ -219,7 +149,9 @@ camera.position.z = currentZoom;
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
-  alpha: false
+  alpha: false,
+  // Erlaubt das Erfassen des fertigen WebGL-Frames fuer das Pixel-Intro.
+  preserveDrawingBuffer: true
 });
 
 renderer.setPixelRatio(
@@ -314,7 +246,7 @@ camera.add(camouSun);
 ========================================= */
 
 
-async function createRockyPlanetTexture(onProgress) {
+function createRockyPlanetTexture() {
   const size = 256;
 
   const canvas = document.createElement("canvas");
@@ -366,12 +298,6 @@ async function createRockyPlanetTexture(onProgress) {
 
   for (let y = 0; y < size; y++) {
     const ny = coordsY[y];
-
-    // In kleinen Bloecken rechnen, damit der Browser dazwischen zeichnen kann.
-    if ((y & 15) === 15) {
-      onProgress?.((y + 1) / size);
-      await camouNextFrame();
-    }
 
     for (let x = 0; x < size; x++) {
       const nx = coordsX[x];
@@ -444,12 +370,7 @@ async function createRockyPlanetTexture(onProgress) {
   return texture;
 }
 
-// Transparenter Platzhalter: Die aufwendige Gesteinstextur entsteht nach dem ersten Bild.
-const camouPlanetPlaceholder = document.createElement("canvas");
-camouPlanetPlaceholder.width = 1;
-camouPlanetPlaceholder.height = 1;
-let camouPlanetTexture = new THREE.CanvasTexture(camouPlanetPlaceholder);
-camouPlanetTexture.colorSpace = THREE.SRGBColorSpace;
+const camouPlanetTexture = createRockyPlanetTexture();
 
 const camouPlanet = new THREE.Sprite(
   new THREE.SpriteMaterial({
@@ -468,23 +389,6 @@ camouPlanet.scale.set(2.2, 2.2, 1);
 camouPlanet.renderOrder = -9;
 
 camera.add(camouPlanet);
-
-async function camouBuildDecorativePlanet() {
-  const texture = await createRockyPlanetTexture(progress => {
-    camouSetIntroProgress(
-      48 + progress * 7,
-      "HINTERGRUND-PLANET WIRD BERECHNET"
-    );
-  });
-
-  const previousTexture = camouPlanetTexture;
-  camouPlanetTexture = texture;
-  camouPlanet.material.map = texture;
-  camouPlanet.material.needsUpdate = true;
-  previousTexture?.dispose();
-  sceneNeedsRender = true;
-}
-
 /* =========================================
    CAMOU COSMOS
    RESPONSIVE HIMMELSKOERPER
@@ -767,7 +671,7 @@ const homeVideo = document.createElement("video");
 homeVideo.src = ASSETS.homeVideo;
 homeVideo.loop = true;
 homeVideo.playsInline = true;
-homeVideo.preload = "metadata";
+homeVideo.preload = "none";
 homeVideo.volume = 1;
 
 let homeVideoStarted = false;
@@ -902,7 +806,7 @@ function playButton(ctx, x, y) {
 ========================================= */
 
 
-async function drawBackground(ctx, width, height) {
+function drawBackground(ctx, width, height) {
   const small = document.createElement("canvas");
   small.width = 512;
   small.height = 256;
@@ -942,15 +846,6 @@ async function drawBackground(ctx, width, height) {
 
   for (let y = 0; y < 256; y++) {
     const v = y / 255;
-
-    // Pixelberechnung in 8-Zeilen-Bloecken ausfuehren.
-    if ((y & 7) === 7) {
-      camouSetIntroProgress(
-        18 + ((y + 1) / 256) * 30,
-        "KUGELTEXTUR WIRD AUFGEBAUT"
-      );
-      await camouNextFrame();
-    }
     const lat = (0.5 - v) * Math.PI;
     const sinLat = Math.sin(lat);
     const cosLat = Math.cos(lat);
@@ -1015,7 +910,7 @@ async function drawBackground(ctx, width, height) {
         greenLat0 + greenLon0 * col.greenCos0, -1, 1
       );
       const influence0 =
-        1 - smooth((fastAcos(dot0) - reach) / 1.05);
+        1 - smooth((Math.acos(dot0) - reach) / 1.05);
       greenInfluence =
         1 - (1 - greenInfluence) * (1 - influence0);
 
@@ -1023,7 +918,7 @@ async function drawBackground(ctx, width, height) {
         greenLat1 + greenLon1 * col.greenCos1, -1, 1
       );
       const influence1 =
-        1 - smooth((fastAcos(dot1) - reach) / 1.05);
+        1 - smooth((Math.acos(dot1) - reach) / 1.05);
       greenInfluence =
         1 - (1 - greenInfluence) * (1 - influence1);
 
@@ -2545,35 +2440,10 @@ function refreshEchoesTexture() {
 
 
 async function createGlobeTexture() {
-  // Einen Microtask abwarten, damit die spaeteren V2-Zeichenfunktionen aktiv sind.
-  await Promise.resolve();
-
+  // Die vier VISUALS-Slides behalten feste Positionen.
+  // Der erste Slide wird erst nach HOME geladen.
   visualImages = new Array(ASSETS.visualSlides.length).fill(null);
   visualIndex = 0;
-
-  globeCanvas = document.createElement("canvas");
-  globeCanvas.width = MAP_W;
-  globeCanvas.height = MAP_H;
-  globeContext = globeCanvas.getContext("2d");
-  globeContext.fillStyle = "#091722";
-  globeContext.fillRect(0, 0, MAP_W, MAP_H);
-
-  // Eine echte Three.js-Textur und nur der scharfe CAMOU-Titel zuerst.
-  globeTexture = new THREE.CanvasTexture(globeCanvas);
-  globeTexture.colorSpace = THREE.SRGBColorSpace;
-  globeTexture.wrapS = THREE.RepeatWrapping;
-  globeTexture.wrapT = THREE.ClampToEdgeWrapping;
-  globeTexture.anisotropy = Math.min(
-    renderer.capabilities.getMaxAnisotropy(),
-    4
-  );
-  globe.material.map = globeTexture;
-  globe.material.needsUpdate = true;
-
-  drawWrappedPanel(globeContext, 0, null);
-  sceneNeedsRender = true;
-  camouSetIntroProgress(10, "CAMOU-KUGEL WIRD SICHTBAR");
-  await camouNextFrame();
 
   const canvasFontsReady = document.fonts?.load
     ? Promise.allSettled([
@@ -2584,76 +2454,27 @@ async function createGlobeTexture() {
       ])
     : Promise.resolve();
 
-  // HOME-Bild und Schriften parallel laden.
-  const [homeImage] = await Promise.all([
-    loadImage(ASSETS.home),
-    canvasFontsReady
-  ]);
+  // Beim Start wird nur das HOME-Bild angefordert.
+  const homeImage = await loadImage(ASSETS.home);
+  await canvasFontsReady;
 
-  camouSetIntroProgress(17, "HOME-BILD UND SCHRIFTEN GELADEN");
+  globeCanvas = document.createElement("canvas");
+  globeCanvas.width = MAP_W;
+  globeCanvas.height = MAP_H;
+  globeContext = globeCanvas.getContext("2d");
 
-  // Der Hintergrund wird zeilenweise berechnet und gibt Frames frei.
-  await drawBackground(globeContext, MAP_W, MAP_H);
-  globeTexture.needsUpdate = true;
+  drawBackground(globeContext, MAP_W, MAP_H);
 
-  // HOME-Bild nun sehr grob pixeliert einsetzen.
-  camouIntroPixelStage = 0;
+  // Als erstes nur HOME auf der V2-Kugel bereitstellen.
   drawWrappedPanel(globeContext, 0, homeImage);
-  sceneNeedsRender = true;
-  camouSetIntroProgress(50, "HOME-MOTIV WIRD AUFGEBAUT");
-  await camouNextFrame();
 
-  // Alle Inhalte der Hauptkugel sowie die Zusatz-Slides vorbereiten.
-  const contentPreparation = camouPreloadStartupContent();
-  const planetPreparation = camouBuildDecorativePlanet();
-  const videoPreparation = camouPrepareHomeVideoMetadata();
-
-  // Sichtbarer Pixelaufbau des HOME-Motivs, waehrend die Ressourcen laden.
-  const revealLabels = [
-    "BILDER WERDEN EINGESETZT",
-    "TEXTUREN UND DETAILS WERDEN AUFGEBAUT",
-    "OBERFLAECHE WIRD VERFEINERT",
-    "LETZTE PIXEL WERDEN SCHARF"
-  ];
-
-  for (let stageIndex = 0; stageIndex < 4; stageIndex++) {
-    camouIntroPixelStage = stageIndex;
-    refreshIsland(0);
-    camouSetIntroProgress(
-      54 + (stageIndex + 1) * 7,
-      revealLabels[stageIndex]
-    );
-    await camouDelay(145);
-  }
-
-  await Promise.all([
-    contentPreparation,
-    planetPreparation,
-    videoPreparation
-  ]);
-
-  // Abschluss: HOME vollstaendig und ohne Pixelraster zeichnen.
-  camouIntroPixelStage = 4;
-  refreshIsland(0);
-  camouSetIntroProgress(94, "WEBGL-SZENE WIRD VORBEREITET");
-
-  if (typeof renderer.compileAsync === "function") {
-    try {
-      await renderer.compileAsync(scene, camera);
-    } catch (error) {
-      console.warn("CAMOU: Shader-Vorbereitung nicht vollstaendig.", error);
-    }
-  } else {
-    await camouNextFrame();
-    renderer.compile(scene, camera);
-  }
-
-  sceneNeedsRender = true;
-  await camouNextFrame();
-  renderer.render(scene, camera);
-  camouSetIntroProgress(100, "CAMOU IST BEREIT");
-  await camouDelay(220);
-  camouFinishIntroUI();
+  globeTexture = new THREE.CanvasTexture(globeCanvas);
+  globeTexture.colorSpace = THREE.SRGBColorSpace;
+  globeTexture.wrapS = THREE.RepeatWrapping;
+  globeTexture.wrapT = THREE.ClampToEdgeWrapping;
+  globeTexture.needsUpdate = true;
+  globeTexture.anisotropy =
+    renderer.capabilities.getMaxAnisotropy();
 
   return globeTexture;
 }
@@ -2807,55 +2628,6 @@ function camouPrepareSection(index) {
   return state.promise;
 }
 
-// Beim ersten Aufruf alle Inhalte der CAMOU-Hauptkugel vorbereiten.
-// Die separate zweite Projektkugel bleibt bewusst lazy-loaded.
-async function camouPreloadStartupContent() {
-  const sectionJobs = [1, 2, 3, 4].map(index => {
-    const state = camouSectionLoadState[index];
-    state.urgent = true;
-    state.wake?.();
-    return camouPrepareSection(index);
-  });
-
-  await Promise.all(sectionJobs);
-
-  // Zusaetzliche Dias fuer den mechanischen VISUALS-Betrachter.
-  await camouEnsureVisualSlides();
-
-  // Zusatzflaechen vorbereiten, die bereits zur Hauptkugel gehoeren.
-  camouDrawTracklist();
-  camouDrawCountdown();
-  sceneNeedsRender = true;
-}
-
-// Video-Metadaten vorwaermen, aber nicht das ganze Video herunterladen.
-async function camouPrepareHomeVideoMetadata() {
-  homeVideo.preload = "metadata";
-
-  if (homeVideo.readyState >= 1) return;
-
-  const metadataReady = new Promise(resolve => {
-    const done = () => {
-      homeVideo.removeEventListener("loadedmetadata", done);
-      homeVideo.removeEventListener("error", done);
-      resolve();
-    };
-
-    homeVideo.addEventListener("loadedmetadata", done, { once: true });
-    homeVideo.addEventListener("error", done, { once: true });
-  });
-
-  try {
-    homeVideo.load();
-  } catch (error) {
-    console.warn("CAMOU: Video-Metadaten konnten nicht vorgeladen werden.", error);
-    return;
-  }
-
-  // Ein langsamer Videohost darf den Start der Hauptseite nicht blockieren.
-  await Promise.race([metadataReady, camouDelay(1800)]);
-}
-
 // Navigation und manuelles Drehen haben Vorrang.
 function camouPrioritizeSection(index) {
   if (index < 1 || index >= sections.length) {
@@ -2941,10 +2713,6 @@ createGlobeTexture()
       "CAMOU: Fehler beim Laden der Kugeltextur",
       error
     );
-    if (camouIntroStatus) {
-      camouIntroStatus.textContent = "START MIT EINSCHRAENKUNGEN";
-    }
-    camouFinishIntroUI();
   });
 
 /* =========================================
@@ -3598,11 +3366,6 @@ for (const type of [
 stage.addEventListener(
   "wheel",
   event => {
-    if (camouIntroActive) {
-      event.preventDefault();
-      return;
-    }
-
     if (
       event.target.closest(".zoom-controls")
     ) return;
@@ -3635,7 +3398,6 @@ stage.addEventListener(
   "pointerdown",
   event => {
         if (
-      camouIntroActive ||
       spotifyOpen ||
       contactOpen ||
       event.target !== renderer.domElement ||
@@ -4671,38 +4433,6 @@ function camouDrawContained(ctx, image, x, y, w, h) {
   ctx.drawImage(image, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
 }
 
-// Kleine vorberechnete Bildvarianten fuer den sichtbaren Pixel-zu-Scharf-Aufbau.
-const camouPixelImageCache = new WeakMap();
-
-function camouDrawPixelatedCover(ctx, image, x, y, w, h, blockSize) {
-  if (!image || !w || !h) return;
-
-  let variants = camouPixelImageCache.get(image);
-  if (!variants) {
-    variants = new Map();
-    camouPixelImageCache.set(image, variants);
-  }
-
-  const smallW = Math.max(8, Math.round(w / blockSize));
-  const smallH = Math.max(8, Math.round(h / blockSize));
-  const key = `${smallW}x${smallH}`;
-  let pixelCanvas = variants.get(key);
-
-  if (!pixelCanvas) {
-    pixelCanvas = document.createElement("canvas");
-    pixelCanvas.width = smallW;
-    pixelCanvas.height = smallH;
-    const pixelContext = pixelCanvas.getContext("2d");
-    cover(pixelContext, image, 0, 0, smallW, smallH);
-    variants.set(key, pixelCanvas);
-  }
-
-  ctx.save();
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(pixelCanvas, x, y, w, h);
-  ctx.restore();
-}
-
 paintPhoto = function(ctx, index, image) {
   const p = PLACES[index];
   const isContact = index === 4;
@@ -4732,23 +4462,6 @@ paintPhoto = function(ctx, index, image) {
   } else if (isContact) {
     // Kein cover(): Dadurch wird auf Desktop und Mobil nichts abgeschnitten.
     camouDrawContained(ctx, image, -photoW / 2, -photoH / 2, photoW, photoH);
-  } else if (
-    index === 0 &&
-    camouIntroActive &&
-    camouIntroPixelStage < 4
-  ) {
-    const pixelSizes = [22, 12, 6, 3];
-    const blockSize = pixelSizes[Math.max(0, camouIntroPixelStage)] || 3;
-    camouDrawPixelatedCover(
-      ctx,
-      image,
-      -photoW / 2,
-      -photoH / 2,
-      photoW,
-      photoH,
-      blockSize
-    );
-    playButton(ctx, 0, 0);
   } else {
     cover(ctx, image, -photoW / 2, -photoH / 2, photoW, photoH);
     if (index === 0) playButton(ctx, 0, 0);
@@ -4952,16 +4665,14 @@ ctx.fillText(
   820
 );
 
-  /* Beschreibung: HOME erscheint waehrend des Starts erst nach dem Pixelaufbau. */
+  /* Beschreibung */
 
   ctx.font = "400 22px Manrope, Arial";
 
   ctx.fillStyle =
   "rgba(244,241,232,.94)";
 
-if (index === 0 && camouIntroActive && camouIntroPixelStage < 4) {
-  // Der CAMOU-Titel bleibt waehrend der gesamten Startanimation scharf sichtbar.
-} else if (side) {
+if (side) {
 
   if (mobile) {
 
@@ -5071,13 +4782,7 @@ if (index === 0 && camouIntroActive && camouIntroPixelStage < 4) {
   } else {
     /* Home, Music, Contact */
 
-    if (
-      index !== 0 ||
-      !camouIntroActive ||
-      camouIntroPixelStage >= 0
-    ) {
-      paintPhoto(ctx, index, image);
-    }
+    paintPhoto(ctx, index, image);
   }
 
   ctx.restore();
@@ -6566,8 +6271,6 @@ else if (f.phase === "swapOut") {
 const camouOriginalGoToSection = goToSection;
 
 goToSection = function(index) {
-  if (camouIntroActive) return;
-
   const target = ((index % 5) + 5) % 5;
 
   // Der gewaehlte Bereich bekommt sofort Vorrang.
@@ -6876,7 +6579,8 @@ function camouDrawCountdown() {
   sceneNeedsRender = true;
 }
 
-// Tracklist und Countdown werden waehrend der Startvorbereitung gezeichnet.
+camouDrawTracklist();
+camouDrawCountdown();
 
 // Nur die Countdown-Flaeche wird sekundenweise neu gezeichnet.
 const camouCountdownTimer = window.setInterval(
@@ -6885,3 +6589,206 @@ const camouCountdownTimer = window.setInterval(
 );
 
 /* ENDE CAMOU – TRACKLIST + COUNTDOWN */
+/* ============================================================
+   CAMOU – PIXEL-INTRO
+   Nur der CAMOU-Schriftzug bleibt vom ersten Frame an scharf.
+   Die vollstaendige Seite startet als Pixelmosaik und wird
+   anschliessend Kachel fuer Kachel freigelegt.
+============================================================ */
+
+async function camouStartPixelIntro() {
+  const experience = document.querySelector(".experience");
+  const logo = $("logo");
+
+  if (
+    !experience ||
+    typeof window.html2canvas !== "function" ||
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  ) {
+    document.documentElement.classList.remove("camou-intro-pending");
+    return;
+  }
+
+  // HOME sowie den ersten fertigen WebGL-Frame abwarten.
+  const waitStarted = performance.now();
+  while (
+    (!camouHomeReady || !CAMOU_V2_MESHES[0]) &&
+    performance.now() - waitStarted < 12000
+  ) {
+    await new Promise(resolve => setTimeout(resolve, 80));
+  }
+
+  if (!camouHomeReady || !CAMOU_V2_MESHES[0]) {
+    document.documentElement.classList.remove("camou-intro-pending");
+    return;
+  }
+
+  if (document.fonts?.ready) {
+    await document.fonts.ready;
+  }
+
+  // Zwei Frames geben Three.js Zeit, die fertige Kugel zu zeichnen.
+  await new Promise(resolve => requestAnimationFrame(() =>
+    requestAnimationFrame(resolve)
+  ));
+
+  let logoClone = null;
+  let logoPreviousVisibility = "";
+
+  if (logo) {
+    const rect = logo.getBoundingClientRect();
+    const style = getComputedStyle(logo);
+    logoClone = logo.cloneNode(true);
+    logoClone.removeAttribute("id");
+    logoClone.classList.add("camou-intro-logo");
+
+    Object.assign(logoClone.style, {
+      position: "fixed",
+      left: `${rect.left}px`,
+      top: `${rect.top}px`,
+      width: "auto",
+      height: "auto",
+      margin: "0",
+      padding: style.padding,
+      color: style.color,
+      fontFamily: style.fontFamily,
+      fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      letterSpacing: style.letterSpacing,
+      lineHeight: style.lineHeight,
+      textDecoration: style.textDecoration,
+      textTransform: style.textTransform,
+      whiteSpace: "nowrap",
+      zIndex: "100001",
+      pointerEvents: "auto",
+      transform: "none"
+    });
+
+    logoPreviousVisibility = logo.style.visibility;
+    logo.style.visibility = "hidden";
+    logoClone.addEventListener("click", event => {
+      event.preventDefault();
+      logo.click();
+    });
+    document.body.appendChild(logoClone);
+  }
+
+  let snapshot;
+  try {
+    snapshot = await window.html2canvas(experience, {
+      backgroundColor: null,
+      scale: Math.min(window.devicePixelRatio || 1, 2),
+      useCORS: true,
+      allowTaint: false,
+      logging: false,
+      onclone: clonedDocument => {
+        clonedDocument.documentElement.classList.remove("camou-intro-pending");
+      },
+      ignoreElements: element => element === logo
+    });
+  } catch (error) {
+    console.warn("CAMOU: Pixel-Intro konnte kein Seitenbild erstellen.", error);
+    if (logo) logo.style.visibility = logoPreviousVisibility;
+    logoClone?.remove();
+    document.documentElement.classList.remove("camou-intro-pending");
+    return;
+  }
+
+  const bounds = experience.getBoundingClientRect();
+  const width = Math.max(1, Math.round(bounds.width));
+  const height = Math.max(1, Math.round(bounds.height));
+  const pixelSize = 12;
+  const columns = Math.max(1, Math.ceil(width / pixelSize));
+  const rows = Math.max(1, Math.ceil(height / pixelSize));
+
+  // Das Bild stark verkleinern und ohne Kantenglaettung vergroessern.
+  const mosaic = document.createElement("canvas");
+  mosaic.width = columns;
+  mosaic.height = rows;
+  const mosaicContext = mosaic.getContext("2d");
+  mosaicContext.imageSmoothingEnabled = true;
+  mosaicContext.drawImage(snapshot, 0, 0, columns, rows);
+
+  const overlay = document.createElement("canvas");
+  overlay.className = "camou-pixel-intro-overlay";
+  overlay.width = width;
+  overlay.height = height;
+  Object.assign(overlay.style, {
+    position: "fixed",
+    left: `${bounds.left}px`,
+    top: `${bounds.top}px`,
+    width: `${width}px`,
+    height: `${height}px`,
+    zIndex: "100000",
+    pointerEvents: "none"
+  });
+  document.body.appendChild(overlay);
+  document.documentElement.classList.remove("camou-intro-pending");
+
+  const ctx = overlay.getContext("2d");
+  const tiles = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < columns; x++) {
+      tiles.push({
+        x,
+        y,
+        delay: Math.random() * 0.68
+      });
+    }
+  }
+
+  // Mischen: Der pixelige Aufbau loest sich unregelmaessig ueber die Seite.
+  for (let i = tiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+  }
+
+  const duration = 3000;
+  const start = performance.now();
+
+  function drawFrame(now) {
+    const progress = Math.min(1, (now - start) / duration);
+
+    ctx.clearRect(0, 0, width, height);
+    ctx.globalCompositeOperation = "source-over";
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(mosaic, 0, 0, width, height);
+
+    // Jede Pixelkachel wird zeitversetzt transparent und gibt die echte
+    // Seite darunter frei. Das Pixelmosaik bleibt bis dahin sichtbar.
+    ctx.globalCompositeOperation = "destination-out";
+    for (const tile of tiles) {
+      const local = Math.max(0, Math.min(1, (progress - tile.delay) / 0.22));
+      if (local <= 0) continue;
+      const eased = local * local * (3 - 2 * local);
+      ctx.globalAlpha = eased;
+      const x = tile.x * width / columns;
+      const y = tile.y * height / rows;
+      const w = Math.ceil(width / columns) + 1;
+      const h = Math.ceil(height / rows) + 1;
+      ctx.fillStyle = "#000";
+      ctx.fillRect(x, y, w, h);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = "source-over";
+
+    if (progress < 1) {
+      requestAnimationFrame(drawFrame);
+    } else {
+      overlay.remove();
+      if (logo) logo.style.visibility = logoPreviousVisibility;
+      logoClone?.remove();
+    }
+  }
+
+  requestAnimationFrame(drawFrame);
+}
+
+// Start erst nach dem Aufbau der HOME-Kugel und der Seitenschriften.
+window.addEventListener("load", () => {
+  window.setTimeout(() => {
+    void camouStartPixelIntro();
+  }, 120);
+}, { once: true });
+
+/* ENDE CAMOU – PIXEL-INTRO */

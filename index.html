@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add("camou-intro-pending");</script>
 
   <!-- CAMOU / BASIS -->
   <meta name="theme-color" content="#101411">
@@ -151,13 +152,8 @@
   }
   </script>
 
-  <!-- THREE.JS CDN frueh verbinden und das Modul vorladen. -->
+  <!-- THREE.JS CDN: Verbindung frueh aufbauen, ohne Funktionen zu laden. -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link
-    rel="modulepreload"
-    href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"
-    crossorigin
-  >
 <!-- CAMOU: LOKALE SCHRIFTEN -->
 
 <!-- Manrope frueh laden -->
@@ -178,23 +174,6 @@
   crossorigin
 >
 
-<!-- DM Mono Regular wird ebenfalls auf der Kugel verwendet. -->
-<link
-  rel="preload"
-  href="./fonts/dm-mono-v16-latin-regular.woff2"
-  as="font"
-  type="font/woff2"
-  crossorigin
->
-
-<!-- Das HOME-Motiv ist das erste sichtbare Bild. -->
-<link
-  rel="preload"
-  href="./assets/hero.jpg"
-  as="image"
-  fetchpriority="high"
->
-
   <!-- CAMOU / STYLES -->
   <link rel="stylesheet" href="style.css">
 
@@ -206,6 +185,9 @@
       }
     }
   </script>
+
+  <!-- Pixel-Intro: Snapshot fuer den pixeligen Seitenaufbau -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
   <!-- CAMOU / JAVASCRIPT -->
   <script type="module" src="script.js"></script>
@@ -283,21 +265,6 @@
     >
 
       <div id="globe"></div>
-
-      <!-- CAMOU STARTUP: Die Kugel bleibt waehrend der Vorbereitung sichtbar. -->
-      <div id="camou-intro" class="camou-intro" role="status" aria-live="polite">
-        <div class="camou-intro-kicker">CAMOU / SYSTEM START</div>
-        <div class="camou-intro-progress" aria-hidden="true">
-          <span id="camou-intro-progress-fill"></span>
-        </div>
-        <div class="camou-intro-bottom">
-          <span id="camou-intro-status">KOSMOS WIRD VORBEREITET</span>
-          <span id="camou-intro-percent">00%</span>
-        </div>
-        <div class="camou-intro-pixels" aria-hidden="true">
-          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-        </div>
-      </div>
 
       <!-- CONTACT MODAL -->
       <div
