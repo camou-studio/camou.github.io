@@ -103,14 +103,43 @@ function camouSetIntroProgress(value, status) {
 
 function camouFinishIntro() {
   const intro = $("camou-intro");
-  if (!intro || intro.classList.contains("is-hidden")) return;
+  const introBrand = $("camou-intro-brand");
+  const navBrand = $("logo");
+  if (!intro || intro.dataset.transitionStarted === "true") return;
 
-  camouSetIntroProgress(100, "WILLKOMMEN BEI CAMOU");
+  intro.dataset.transitionStarted = "true";
+  camouSetIntroProgress(100, "HOME WIRD GEÖFFNET");
   document.body.classList.remove("camou-loading");
-  document.body.classList.add("camou-intro-done");
-  intro.classList.add("is-hidden");
+  document.body.classList.add("camou-intro-transitioning");
 
-  window.setTimeout(() => intro.remove(), 1000);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const duration = reducedMotion ? 1 : 1150;
+
+  if (introBrand && navBrand && typeof introBrand.animate === "function") {
+    // Logo-Zielpunkt und Zielgroesse direkt aus der Navigationsleiste messen.
+    const from = introBrand.getBoundingClientRect();
+    const to = navBrand.getBoundingClientRect();
+    const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+    const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+    const scale = to.width / from.width;
+
+    const flight = introBrand.animate([
+      { transform: "translate(-50%, -50%) scale(1)" },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})` }
+    ], { duration, easing: "cubic-bezier(.2,.76,.22,1)", fill: "forwards" });
+
+    flight.finished.catch(() => {}).then(() => {
+      intro.remove();
+      document.body.classList.remove("camou-intro-transitioning");
+      document.body.classList.add("camou-intro-done");
+    });
+  } else {
+    window.setTimeout(() => {
+      intro.remove();
+      document.body.classList.remove("camou-intro-transitioning");
+      document.body.classList.add("camou-intro-done");
+    }, duration);
+  }
 }
 
 const clamp = (v, min, max) =>

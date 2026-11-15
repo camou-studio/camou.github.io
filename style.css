@@ -202,3 +202,63 @@ body.camou-intro-done .experience { opacity: 1; transform: none; }
   .camou-intro__horizon { animation: none; }
   .camou-intro, .experience, .camou-intro__progress { transition-duration: .01ms !important; }
 }
+
+
+/* CAMOU INTRO – Logo fliegt in die echte Navigation */
+.camou-loading .experience { opacity: 0; }
+.experience { transition: opacity .25s ease; }
+.camou-intro {
+  position: fixed; z-index: 1000; inset: 0; display: grid; place-items: center;
+  overflow: hidden; color: #edf1e9; background: transparent;
+}
+.camou-intro::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% -8%, rgba(0,190,151,.34), transparent 48%),
+    radial-gradient(ellipse at 50% 48%, #071b17 0%, #050b09 54%, #020403 100%);
+  opacity: 1; transition: opacity .95s ease;
+}
+.camou-intro__atmosphere { position:absolute; inset:0; overflow:hidden; pointer-events:none;
+  background-image: radial-gradient(circle at 12% 20%, rgba(210,245,229,.28) 0 1px, transparent 1.8px),
+    radial-gradient(circle at 78% 32%, rgba(210,245,229,.18) 0 1px, transparent 1.7px),
+    radial-gradient(circle at 38% 64%, rgba(210,245,229,.13) 0 1px, transparent 1.8px);
+  background-size:113px 127px,167px 151px,193px 181px; opacity:.42; transition:opacity .65s ease;
+}
+.camou-intro__horizon { position:absolute; left:50%; top:57%; width:min(78vw,980px); height:min(39vw,430px);
+  min-height:220px; transform:translate(-50%,-50%); border-radius:50% 50% 0 0 / 100% 100% 0 0;
+  border-top:1px solid rgba(83,255,208,.8);
+  background:radial-gradient(ellipse at 50% 0%,rgba(0,224,174,.42),rgba(0,120,94,.16) 35%,transparent 72%);
+  box-shadow:0 -18px 75px rgba(0,210,163,.18),0 -2px 18px rgba(75,255,211,.2);
+  animation:camou-horizon-breathe 6s ease-in-out infinite;
+}
+.camou-intro__brand {
+  position:absolute; z-index:3; left:50%; top:50%; margin:0;
+  width:max-content; font-size:clamp(42px,8vw,76px); letter-spacing:-1.5px;
+  transform:translate(-50%,-50%); transform-origin:center; white-space:nowrap;
+  color:var(--fg); text-decoration:none; font-weight:800;
+  text-shadow:0 0 26px rgba(128,255,220,.12); will-change:transform;
+}
+.camou-intro__brand span { color:var(--accent); }
+.camou-intro__loader { position:absolute; z-index:2; left:50%; bottom:clamp(42px,9vh,88px);
+  width:min(220px,56vw); transform:translateX(-50%); display:grid;
+  grid-template-columns:1fr auto; align-items:center; column-gap:14px; row-gap:11px;
+  transition:opacity .55s ease;
+}
+.camou-intro__status,.camou-intro__percent { font:8px var(--mono); letter-spacing:1.5px; color:rgba(226,239,230,.66); }
+.camou-intro__status { white-space:nowrap; }
+.camou-intro__percent { text-align:right; font-variant-numeric:tabular-nums; }
+.camou-intro__track { grid-column:1/-1; height:1px; overflow:hidden; background:rgba(220,239,228,.2); }
+.camou-intro__progress { display:block; width:8%; height:100%; background:#8ce6c5;
+  box-shadow:0 0 10px rgba(94,255,205,.65); transition:width .45s ease; }
+.camou-intro-transitioning .camou-intro::before { opacity:0; }
+.camou-intro-transitioning .camou-intro__atmosphere,
+.camou-intro-transitioning .camou-intro__loader { opacity:0; }
+.camou-intro-transitioning .topbar .logo { opacity:0; }
+.camou-intro-done .topbar .logo { opacity:1; transition:opacity .2s ease; }
+@keyframes camou-horizon-breathe {
+  0%,100% { opacity:.82; transform:translate(-50%,-50%) scaleX(.985); }
+  50% { opacity:1; transform:translate(-50%,-50%) scaleX(1.015); }
+}
+@media (prefers-reduced-motion:reduce) {
+  .camou-intro__horizon { animation:none; }
+  .camou-intro::before,.camou-intro__atmosphere,.camou-intro__loader,.experience { transition-duration:.01ms !important; }
+}
