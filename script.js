@@ -36,8 +36,8 @@ const sections = [
   {
     name: "HOME",
     eyebrow: "01 — NEW PROJECT",
-    title: ["c a m O u"],
-    body: ["Gleiche Fragen.", "Neuer Cosmos."],
+    title: ["c a m o u"],
+    body: ["Gleiche Fragen.", "Neue Perspektiven."],
     image: ASSETS.home
   },
   {
@@ -90,28 +90,6 @@ const sections = [
 ========================================= */
 
 const $ = id => document.getElementById(id);
-
-function camouSetIntroProgress(value, status) {
-  const progress = $("camou-intro-progress");
-  const percent = $("camou-intro-percent");
-  const label = $("camou-intro-status");
-  const amount = Math.max(0, Math.min(100, Math.round(value)));
-  if (progress) progress.style.width = `${amount}%`;
-  if (percent) percent.textContent = `${String(amount).padStart(2, "0")}%`;
-  if (label && status) label.textContent = status;
-}
-
-function camouFinishIntro() {
-  const intro = $("camou-intro");
-  if (!intro || intro.classList.contains("is-hidden")) return;
-
-  camouSetIntroProgress(100, "WILLKOMMEN BEI CAMOU");
-  document.body.classList.remove("camou-loading");
-  document.body.classList.add("camou-intro-done");
-  intro.classList.add("is-hidden");
-
-  window.setTimeout(() => intro.remove(), 1000);
-}
 
 const clamp = (v, min, max) =>
   Math.max(min, Math.min(max, v));
@@ -175,10 +153,7 @@ const renderer = new THREE.WebGLRenderer({
 });
 
 renderer.setPixelRatio(
-  Math.min(
-    window.devicePixelRatio,
-    mobile ? 1.5 : 2
-  )
+  Math.min(window.devicePixelRatio, 2)
 );
 
 renderer.setSize(
@@ -265,7 +240,6 @@ camera.add(camouSun);
    CAMOU – MINERALISCHER PLANET
 ========================================= */
 
-
 function createRockyPlanetTexture() {
   const size = 256;
 
@@ -275,26 +249,32 @@ function createRockyPlanetTexture() {
 
   const ctx = canvas.getContext("2d");
   const image = ctx.createImageData(size, size);
-  const data = image.data;
 
-  // Der urspruengliche reproduzierbare Rauschalgorithmus.
+  // Reproduzierbare, natuerliche Oberflaechenstruktur
   const hash = (x, y) => {
     let n =
-      Math.imul(x, 374761393) + Math.imul(y, 668265263);
+      Math.imul(x, 374761393) +
+      Math.imul(y, 668265263);
+
     n = Math.imul(n ^ (n >>> 13), 1274126177);
+
     return ((n ^ (n >>> 16)) >>> 0) / 4294967295;
   };
 
   const noise = (x, y) => {
     const ix = Math.floor(x);
     const iy = Math.floor(y);
+
     const fx = x - ix;
     const fy = y - iy;
+
     const sx = fx * fx * (3 - 2 * fx);
     const sy = fy * fy * (3 - 2 * fy);
 
     const a =
-      hash(ix, iy) * (1 - sx) + hash(ix + 1, iy) * sx;
+      hash(ix, iy) * (1 - sx) +
+      hash(ix + 1, iy) * sx;
+
     const b =
       hash(ix, iy + 1) * (1 - sx) +
       hash(ix + 1, iy + 1) * sx;
@@ -302,91 +282,112 @@ function createRockyPlanetTexture() {
     return a * (1 - sy) + b * sy;
   };
 
+  // Lichteinfall von links oben
   const lx = -0.48;
   const ly = 0.58;
   const lz = Math.sqrt(1 - lx * lx - ly * ly);
 
-  // Ortskoordinaten einmal je Spalte beziehungsweise Zeile.
-  const coordsX = new Float64Array(size);
-  const coordsY = new Float64Array(size);
-  for (let x = 0; x < size; x++) {
-    coordsX[x] = (x + 0.5 - size / 2) / (size * 0.445);
-  }
   for (let y = 0; y < size; y++) {
-    coordsY[y] = (size / 2 - y - 0.5) / (size * 0.445);
-  }
-
-  for (let y = 0; y < size; y++) {
-    const ny = coordsY[y];
-
     for (let x = 0; x < size; x++) {
-      const nx = coordsX[x];
+      const nx =
+        (x + 0.5 - size / 2) / (size * 0.445);
+
+      const ny =
+        (size / 2 - y - 0.5) / (size * 0.445);
+
       const r2 = nx * nx + ny * ny;
       const i = (y * size + x) * 4;
 
       if (r2 >= 1) continue;
 
       const nz = Math.sqrt(1 - r2);
-      const light = Math.max(0, nx * lx + ny * ly + nz * lz);
+
+      const light = Math.max(
+        0,
+        nx * lx + ny * ly + nz * lz
+      );
+
       const shade = 0.28 + 0.72 * light;
 
-      const warp = noise(nx * 3.1 + 13, ny * 3.1 + 7) - 0.5;
+      // Unterschiedlich grosse Gesteinsstrukturen
+      const warp =
+        noise(nx * 3.1 + 13, ny * 3.1 + 7) - 0.5;
+
       const u = nx + warp * 0.17;
       const v = ny - warp * 0.13;
 
-      const large = noise(u * 5.2 + 27, v * 5.2 + 11);
-      const medium = noise(u * 13.7 + 5, v * 13.7 + 19);
-      const fine = noise(u * 31.3 + 21, v * 31.3 + 31);
+      const large = noise(
+        u * 5.2 + 27,
+        v * 5.2 + 11
+      );
+
+      const medium = noise(
+        u * 13.7 + 5,
+        v * 13.7 + 19
+      );
+
+      const fine = noise(
+        u * 31.3 + 21,
+        v * 31.3 + 31
+      );
 
       const mineral =
-        0.58 * large + 0.30 * medium + 0.12 * fine;
+        0.58 * large +
+        0.30 * medium +
+        0.12 * fine;
+
       const relief = (mineral - 0.5) * 43;
 
+      // Gedämpftes Schieferblau und Lavendelgrau
+      const color = [
+        106 + relief + (medium - 0.5) * 11,
+        109 + relief * 0.88,
+        133 + relief * 1.12 + (large - 0.5) * 12
+      ];
+
+
+
       const radius = Math.sqrt(r2);
+
+      // Dezentes Streulicht am oberen linken Planetenrand
       const rimLight =
         Math.pow(1 - nz, 5) *
-        Math.max(0, nx * -0.55 + ny * 0.80) * 0.16;
+        Math.max(0, nx * -0.55 + ny * 0.80) *
+        0.16;
+
       const vignette =
-        1 - 0.12 * Math.pow(radius, 3) + rimLight;
+        1 -
+        0.12 * Math.pow(radius, 3) +
+        rimLight;
 
-      data[i] = Math.max(
-        0,
-        Math.min(
-          255,
-          Math.round(
-            (106 + relief + (medium - 0.5) * 11) *
-            shade * vignette
+      // Beleuchtung auf die drei Farbkanäle anwenden
+      for (let k = 0; k < 3; k++) {
+        image.data[i + k] = Math.max(
+          0,
+          Math.min(
+            255,
+            Math.round(
+              color[k] * shade * vignette
+            )
           )
-        )
-      );
-      data[i + 1] = Math.max(
-        0,
-        Math.min(
-          255,
-          Math.round(
-            (109 + relief * 0.88) * shade * vignette
-          )
-        )
-      );
-      data[i + 2] = Math.max(
-        0,
-        Math.min(
-          255,
-          Math.round(
-            (133 + relief * 1.12 + (large - 0.5) * 12) *
-            shade * vignette
-          )
-        )
+        );
+      }
+      // Weicher Kugelrand, kein quadratischer Rand
+      const edge = Math.min(
+        1,
+        (1 - Math.sqrt(r2)) * 110
       );
 
-      const edge = Math.min(1, (1 - radius) * 110);
-      data[i + 3] = Math.round(255 * edge);
+      image.data[i + 3] =
+        Math.round(255 * edge);
     }
   }
 
   ctx.putImageData(image, 0, 0);
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
+
   return texture;
 }
 
@@ -527,8 +528,8 @@ globeGroup.add(atmosphere);
    FREIE POSITIONIERUNG AUF DER KUGEL
 ========================================= */
 
-const MAP_W = 2048;
-const MAP_H = 1024;
+const MAP_W = 4096;
+const MAP_H = 2048;
 const RAD = Math.PI / 180;
 
 // Neigung der gesamten Komposition um ihre eigene Kugelmitte.
@@ -833,133 +834,162 @@ function drawBackground(ctx, width, height) {
 
   const g = small.getContext("2d");
   const image = g.createImageData(512, 256);
-  const data = image.data;
 
-  // Die Positionen stammen unveraendert aus VISUALS und ECHOES.
-  const centers = [PLACES[2], PLACES[3]].map(p => {
-    const lat = p.lat * RAD;
-    return {
-      sinLat: Math.sin(lat),
-      cosLat: Math.cos(lat),
-      lon: p.lon * RAD
-    };
-  });
-
-  // Ausschliesslich von x abhaengige Werte einmal berechnen.
-  const columns = Array.from({ length: 512 }, (_, x) => {
-    const u = x / 512;
-    const lon = (u - 0.25) * Math.PI * 2;
-
-    return {
-      waveX: u * Math.PI * 2,
-      glowX: u * Math.PI * 4,
-      flow1X: u * Math.PI * 6,
-      flow2X: u * Math.PI * 4,
-      flow3X: u * Math.PI * 8,
-      marbling2X: u * Math.PI * 12,
-      cosMarbling3X: Math.cos(u * Math.PI * 6),
-      lightingX: Math.cos(2 * Math.PI * (u - 0.25)),
-      greenCos0: Math.cos(lon - centers[0].lon),
-      greenCos1: Math.cos(lon - centers[1].lon)
-    };
-  });
+  // Positionen von VISUALS und ECHOES auf der Kugel
+  const centers = [PLACES[2], PLACES[3]].map(p => ({
+    lat: p.lat * RAD,
+    lon: p.lon * RAD
+  }));
 
   for (let y = 0; y < 256; y++) {
     const v = y / 255;
+
     const lat = (0.5 - v) * Math.PI;
     const sinLat = Math.sin(lat);
     const cosLat = Math.cos(lat);
 
-    // Ausschliesslich von y abhaengige Werte einmal pro Zeile.
-    const pole = smooth(
-      Math.min(1, Math.min(v, 1 - v) / 0.24)
-    );
-    const flow1Y = Math.sin(v * Math.PI * 4) * 1.8;
-    const flow2Y = Math.sin(v * Math.PI * 6) * 1.5;
-    const flow3Y = Math.cos(v * Math.PI * 5);
-    const waveY = v * 2.2;
-    const glowY = v * 3.1;
-    const marbling1Y = Math.sin(v * Math.PI * 4) * 1.4;
-    const marbling2Y = v * Math.PI * 5;
-    const marbling3Y = v * Math.PI * 7;
-    const lightingY = Math.sin(Math.PI * v);
-    const vignetteY =
-      1 - 0.07 * Math.pow(Math.abs(v - 0.5) * 2, 2);
-
-    const greenLat0 = sinLat * centers[0].sinLat;
-    const greenLon0 = cosLat * centers[0].cosLat;
-    const greenLat1 = sinLat * centers[1].sinLat;
-    const greenLon1 = cosLat * centers[1].cosLat;
-
     for (let x = 0; x < 512; x++) {
-      const col = columns[x];
+      const u = x / 512;
+      const lon = (u - 0.25) * Math.PI * 2;
 
-      const wave = Math.sin(col.waveX + waveY);
-      const glow = Math.cos(col.glowX - glowY);
+      // Bisherige Grundfarben erhalten
+      const pole = smooth(
+        Math.min(
+          1,
+          Math.min(v, 1 - v) / 0.24
+        )
+      );
 
-      const flow1 = Math.sin(col.flow1X + flow1Y);
-      const flow2 = Math.cos(col.flow2X + flow2Y);
-      const flow3 = Math.sin(col.flow3X + flow3Y);
+      const wave = Math.sin(
+        u * Math.PI * 2 + v * 2.2
+      );
+
+      const glow = Math.cos(
+        u * Math.PI * 4 - v * 3.1
+      );
+
+      // Bestehende organische Stroemungen
+      const flow1 = Math.sin(
+        u * Math.PI * 6 +
+        Math.sin(v * Math.PI * 4) * 1.8
+      );
+
+      const flow2 = Math.cos(
+        u * Math.PI * 4 +
+        Math.sin(v * Math.PI * 6) * 1.5
+      );
+
+      const flow3 = Math.sin(
+        u * Math.PI * 8 +
+        Math.cos(v * Math.PI * 5)
+      );
 
       const organic =
-        flow1 * 0.45 + flow2 * 0.35 + flow3 * 0.20;
+        flow1 * 0.45 +
+        flow2 * 0.35 +
+        flow3 * 0.20;
 
-      const color0 = lerp(
-        17, 32 + wave * 18 + organic * 24, pole
-      );
-      const color1 = lerp(
-        67, 131 + glow * 22 + organic * 31, pole
-      );
-      const color2 = lerp(
-        89, 145 + wave * 20 + organic * 38, pole
+      const base = [17, 67, 89];
+
+      const target = [
+        32 + wave * 18 + organic * 24,
+        131 + glow * 22 + organic * 31,
+        145 + wave * 20 + organic * 38
+      ];
+
+      const color = base.map((value, i) =>
+        lerp(value, target[i], pole)
       );
 
       const lighting =
-        (1 + 0.035 * col.lightingX * lightingY) * vignetteY;
+        (
+          1 +
+          0.035 *
+          Math.cos(2 * Math.PI * (u - 0.25)) *
+          Math.sin(Math.PI * v)
+        ) *
+        (
+          1 -
+          0.07 *
+          Math.pow(Math.abs(v - 0.5) * 2, 2)
+        );
 
+      // Grossflaechige, unregelmaessige Farbstruktur
       const marbling =
-        Math.sin(col.flow3X + marbling1Y) * 0.47 +
-        Math.cos(col.marbling2X - marbling2Y) * 0.30 +
-        Math.sin(marbling3Y + col.cosMarbling3X) * 0.23;
+        Math.sin(
+          u * Math.PI * 8 +
+          Math.sin(v * Math.PI * 4) * 1.4
+        ) * 0.47 +
 
-      const reach = 0.34 + 0.10 * marbling;
+        Math.cos(
+          u * Math.PI * 12 -
+          v * Math.PI * 5
+        ) * 0.30 +
+
+        Math.sin(
+          v * Math.PI * 7 +
+          Math.cos(u * Math.PI * 6)
+        ) * 0.23;
+
+      // Gruene Farbanteile um VISUALS und ECHOES
       let greenInfluence = 0;
 
-      // Beide Farbzentren mit denselben Formeln wie bisher.
-      const dot0 = clamp(
-        greenLat0 + greenLon0 * col.greenCos0, -1, 1
-      );
-      const influence0 =
-        1 - smooth((Math.acos(dot0) - reach) / 1.05);
-      greenInfluence =
-        1 - (1 - greenInfluence) * (1 - influence0);
+      for (const center of centers) {
+        const dot = clamp(
+          sinLat * Math.sin(center.lat) +
+          cosLat *
+          Math.cos(center.lat) *
+          Math.cos(lon - center.lon),
+          -1,
+          1
+        );
 
-      const dot1 = clamp(
-        greenLat1 + greenLon1 * col.greenCos1, -1, 1
-      );
-      const influence1 =
-        1 - smooth((Math.acos(dot1) - reach) / 1.05);
-      greenInfluence =
-        1 - (1 - greenInfluence) * (1 - influence1);
+        const angle = Math.acos(dot);
 
+        const reach =
+          0.34 + 0.10 * marbling;
+
+        const influence =
+          1 - smooth(
+            (angle - reach) / 1.05
+          );
+
+
+        greenInfluence =
+          1 -
+          (1 - greenInfluence) *
+          (1 - influence);
+      }
+
+      // Weicher, grossflaechiger Uebergang
       const mix = clamp(
-        greenInfluence * (0.66 + 0.09 * organic), 0, 0.78
+        greenInfluence *
+        (0.66 + 0.09 * organic),
+        0,
+        0.78
       );
+
+      const forest = [
+        12 + marbling * 4,
+        48 + marbling * 10,
+        34 + marbling * 6
+      ];
 
       const j = (y * 512 + x) * 4;
-      data[j] = clamp(
-        lerp(color0, 12 + marbling * 4, mix) * lighting,
-        0, 255
-      );
-      data[j + 1] = clamp(
-        lerp(color1, 48 + marbling * 10, mix) * lighting,
-        0, 255
-      );
-      data[j + 2] = clamp(
-        lerp(color2, 34 + marbling * 6, mix) * lighting,
-        0, 255
-      );
-      data[j + 3] = 255;
+
+      for (let k = 0; k < 3; k++) {
+        image.data[j + k] = clamp(
+          lerp(
+            color[k],
+            forest[k],
+            mix
+          ) * lighting,
+          0,
+          255
+        );
+      }
+
+      image.data[j + 3] = 255;
     }
   }
 
@@ -967,7 +997,14 @@ function drawBackground(ctx, width, height) {
 
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(small, 0, 0, width, height);
+
+  ctx.drawImage(
+    small,
+    0,
+    0,
+    width,
+    height
+  );
 }
 
 /* =========================================
@@ -2458,15 +2495,7 @@ function refreshEchoesTexture() {
    KUGELTEXTUR ERSTELLEN
 ========================================= */
 
-
 async function createGlobeTexture() {
-  camouSetIntroProgress(18, "HOME-BILD WIRD GELADEN");
-
-  // Die vier VISUALS-Slides behalten feste Positionen.
-  // Der erste Slide wird erst nach HOME geladen.
-  visualImages = new Array(ASSETS.visualSlides.length).fill(null);
-  visualIndex = 0;
-
   const canvasFontsReady = document.fonts?.load
     ? Promise.allSettled([
         document.fonts.load("300 58px Manrope"),
@@ -2476,273 +2505,85 @@ async function createGlobeTexture() {
       ])
     : Promise.resolve();
 
-  // Beim Start wird nur das HOME-Bild angefordert.
-  const homeImage = await loadImage(ASSETS.home);
-  camouSetIntroProgress(58, "KUGEL WIRD AUFGEBAUT");
+  const images = await Promise.all([
+    ASSETS.home,
+    ASSETS.music,
+    ASSETS.visuals,
+    ASSETS.archive,
+    ASSETS.contact
+  ].map(loadImage));
+
+
+
+  // Erstes VISUALS-Bild bereits vorhanden.
+  // Weitere Bilder erst beim Aufruf laden.
+  visualImages = [
+    images[2],
+    ...ASSETS.visualSlides.slice(1).map(() => null)
+  ];
+
+  visualIndex = 0;
   await canvasFontsReady;
-  camouSetIntroProgress(82, "LETZTE DETAILS");
 
   globeCanvas = document.createElement("canvas");
   globeCanvas.width = MAP_W;
   globeCanvas.height = MAP_H;
   globeContext = globeCanvas.getContext("2d");
 
-  drawBackground(globeContext, MAP_W, MAP_H);
+  drawBackground(
+    globeContext,
+    MAP_W,
+    MAP_H
+  );
 
-  // Als erstes nur HOME auf der V2-Kugel bereitstellen.
-  drawWrappedPanel(globeContext, 0, homeImage);
+  // Unveränderliche Grundtextur ohne Bilder.
+  baseTextureCanvas = document.createElement("canvas");
 
-  globeTexture = new THREE.CanvasTexture(globeCanvas);
+  baseTextureCanvas.width = MAP_W;
+  baseTextureCanvas.height = MAP_H;
+
+  baseTextureCanvas
+    .getContext("2d")
+    .drawImage(globeCanvas, 0, 0);
+
+  images.forEach((image, index) => {
+    drawWrappedPanel(
+      globeContext,
+      index,
+      index === 2 ? visualImages[0] : image
+    );
+  });
+
+  globeTexture = new THREE.CanvasTexture(
+    globeCanvas
+  );
+
   globeTexture.colorSpace = THREE.SRGBColorSpace;
   globeTexture.wrapS = THREE.RepeatWrapping;
-  globeTexture.wrapT = THREE.ClampToEdgeWrapping;
-  globeTexture.needsUpdate = true;
+globeTexture.wrapT = THREE.ClampToEdgeWrapping;
+globeTexture.needsUpdate = true;
+   
   globeTexture.anisotropy =
     renderer.capabilities.getMaxAnisotropy();
 
   return globeTexture;
 }
 
-/* =========================================
-   CAMOU: GESTAFFELTES NACHLADEN
-========================================= */
-
-// Zustand pro Bereich. HOME wird getrennt davor aufgebaut.
-const camouSectionLoadState = sections.map((_, index) => ({
-  ready: index === 0,
-  urgent: false,
-  promise: null,
-  wake: null
-}));
-
-let camouHomeReady = false;
-let camouBackgroundStarted = false;
-let camouLastViewedSection = 0;
-
-// Nur fuer eine sehr fruehe Navigation.
-// Die echte Grafik ersetzt diesen Platzhalter.
-const camouPendingPhoto = document.createElement("canvas");
-camouPendingPhoto.width = 1;
-camouPendingPhoto.height = 1;
-
-function camouWaitForIdle() {
-  return new Promise(resolve => {
-    if (typeof requestIdleCallback === "function") {
-      requestIdleCallback(resolve, { timeout: 1800 });
-    } else {
-      setTimeout(resolve, 120);
-    }
-  });
-}
-
-// Hintergrundarbeit bevorzugt in ruhigen Browserphasen.
-// Bei einer Navigation darf die Wartezeit enden.
-async function camouWaitForPaintSlot(state) {
-  const busy = () =>
-    isDragging || menuAnimating ||
-    !!camouWorldFlight || camouWorldMode === "planet";
-
-  while (!state.urgent && busy()) {
-    await new Promise(resolve => setTimeout(resolve, 150));
-  }
-
-  if (state.urgent) return;
-
-  await new Promise(resolve => {
-    let completed = false;
-    let idleId = null;
-    let timerId = null;
-
-    const finish = () => {
-      if (completed) return;
-
-      completed = true;
-      state.wake = null;
-
-      if (
-        idleId !== null &&
-        typeof cancelIdleCallback === "function"
-      ) {
-        cancelIdleCallback(idleId);
-      }
-
-      if (timerId !== null) clearTimeout(timerId);
-
-      resolve();
-    };
-
-    state.wake = finish;
-
-    if (typeof requestIdleCallback === "function") {
-      idleId = requestIdleCallback(
-        finish,
-        { timeout: 1800 }
-      );
-    } else {
-      timerId = setTimeout(finish, 120);
-    }
-  });
-
-  // Hat waehrend der Wartezeit eine Geste begonnen?
-  if (!state.urgent && busy()) {
-    await camouWaitForPaintSlot(state);
-  }
-}
-
-// Jeden Bereich nur einmal herunterladen.
-function camouPrepareSection(index) {
-  const state = camouSectionLoadState[index];
-
-  if (!state || state.ready) {
-    return Promise.resolve();
-  }
-
-  if (state.promise) {
-    return state.promise;
-  }
-
-  state.promise = (async () => {
-
-    if (index === 3) {
-      // ECHOES benoetigt nur den gezeichneten Kompass.
-      await camouWaitForPaintSlot(state);
-
-      if (!CAMOU_V2_CANVASES[index]) {
-        drawWrappedPanel(globeContext, index, null);
-      }
-
-    } else {
-      // MUSIC, VISUALS und CONTACT.
-      const image = await loadImage(
-        sections[index].image
-      );
-
-      // Bild nach Moeglichkeit vorher dekodieren.
-      if (typeof image.decode === "function") {
-        try {
-          await image.decode();
-        } catch (_) {}
-      }
-
-      if (index === 2) {
-        visualImages[0] = image;
-      }
-
-      await camouWaitForPaintSlot(state);
-
-      drawWrappedPanel(
-        globeContext,
-        index,
-        image
-      );
-    }
-
-    state.ready = true;
-
-  })().catch(error => {
-    state.promise = null;
-
-    console.error(
-      "CAMOU: Bereich konnte nicht geladen werden",
-      index,
-      error
-    );
-  });
-
-  return state.promise;
-}
-
-// Navigation und manuelles Drehen haben Vorrang.
-function camouPrioritizeSection(index) {
-  if (index < 1 || index >= sections.length) {
-    return;
-  }
-
-  const state = camouSectionLoadState[index];
-
-  if (state.ready) return;
-
-  state.urgent = true;
-
-  // Eine wartende Hintergrundaufgabe aufwecken.
-  state.wake?.();
-
-  // HOME muss zuerst initialisiert sein.
-  if (!camouHomeReady) return;
-
-  // Interaktive Flaeche sofort erstellen.
-  // Das echte Bild wird anschliessend eingesetzt.
-  if (!CAMOU_V2_CANVASES[index]) {
-    drawWrappedPanel(
-      globeContext,
-      index,
-      index === 2 || index === 3
-        ? null
-        : camouPendingPhoto
-    );
-  }
-
-  void camouPrepareSection(index);
-}
-
-// Normales Nachladen strikt nacheinander.
-async function camouLoadRemainingSections() {
-  if (camouBackgroundStarted) return;
-
-  camouBackgroundStarted = true;
-
-  // MUSIC, VISUALS, ECHOES, CONTACT.
-  for (const index of [1, 2, 3, 4]) {
-    const state = camouSectionLoadState[index];
-
-    // Bereits geladen oder durch Navigation gestartet?
-    if (state.ready || state.promise) continue;
-
-    // Vor jedem weiteren Bereich freie Zeit abwarten.
-    await camouWaitForIdle();
-
-    if (state.ready || state.promise) continue;
-
-    await camouPrepareSection(index);
-  }
-}
-
-// Zuerst HOME. Danach die Hintergrundwarteschlange.
 createGlobeTexture()
   .then(texture => {
     globe.material.map = texture;
     globe.material.needsUpdate = true;
     sceneNeedsRender = true;
 
-    console.info("CAMOU: HOME-Kugel geladen.");
-
-    camouHomeReady = true;
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => camouFinishIntro());
-    });
-
-    // Sehr fruehe Navigationswünsche berücksichtigen.
-    for (let index = 1; index < sections.length; index++) {
-      if (camouSectionLoadState[index].urgent) {
-        camouPrioritizeSection(index);
-      }
-    }
-
-    // HOME zunaechst rendern lassen.
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        void camouLoadRemainingSections();
-      });
-    });
+    console.info(
+      "CAMOU: Entdecker-Kugel geladen."
+    );
   })
   .catch(error => {
     console.error(
       "CAMOU: Fehler beim Laden der Kugeltextur",
       error
     );
-    camouSetIntroProgress(100, "STARTSEITE WIRD GEÖFFNET");
-    requestAnimationFrame(() => requestAnimationFrame(() => camouFinishIntro()));
   });
 
 /* =========================================
@@ -2983,7 +2824,7 @@ spotifyModal?.addEventListener(
 ========================================= */
 
 const CONTACT_SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycby3SfFxFDJQZNL0PxI75Z0O_HyDZl_MoC2b8jcW5PLy0kwPAuiOnK9macrxFTaUboXftg/exec";
+  "https://script.google.com/macros/s/AKfycbyx-lPLqnkym7hppwVxu4sTedAtXpAL5iedagg8aA48DiOWKDtELm6nwU4O8Se0In9z/exec";
 
 const contactModal = $("contact-modal");
 const contactForm = $("contact-form");
@@ -4172,12 +4013,9 @@ function resize() {
 
   renderer.setSize(w, h);
 
-renderer.setPixelRatio(
-  Math.min(
-    window.devicePixelRatio,
-    mobile ? 1.5 : 2
-  )
-);
+  renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+  );
 
   sceneNeedsRender = true;
 }
@@ -6291,25 +6129,27 @@ else if (f.phase === "swapOut") {
 const camouOriginalGoToSection = goToSection;
 
 goToSection = function(index) {
-  const target = ((index % 5) + 5) % 5;
+  // VISUALS-Bilder erst bei Aufruf laden.
+  if (index === 2) {
+    void camouEnsureVisualSlides();
+  }
 
-  // Der gewaehlte Bereich bekommt sofort Vorrang.
-  // Weitere VISUALS-Dias erst beim Hebel laden.
+  // Vom zweiten Planeten zu CAMOU zurueck.
   if (camouWorldMode === "planet") {
-    camouPrioritizeSection(target);
-
-    camouFlyToWorld("camou", target);
+    camouFlyToWorld(
+      "camou",
+      ((index % 5) + 5) % 5
+    );
     return;
   }
 
   if (camouWorldFlight) return;
 
-  camouPrioritizeSection(target);
-
-  camouOriginalGoToSection(target);
+  camouOriginalGoToSection(index);
 };
 
 const camouOriginalIndicator = updateIndicator;
+
 
 updateIndicator = function() {
   // Auf dem Projektplaneten bleibt PLANET aktiv.
@@ -6321,26 +6161,12 @@ updateIndicator = function() {
     return;
   }
 
-  // Waehrend der Planetenfluege keine
-  // normale Bereichsanzeige aktualisieren.
+  // Waehrend des Hin- und Rueckflugs
+  // keine automatische Anzeige aktualisieren.
   if (camouWorldFlight) return;
 
-  // Manuelles Drehen mit Maus oder Fingern:
-  // neu sichtbaren Bereich sofort priorisieren.
-  if (
-    camouHomeReady &&
-    camouWorldMode === "camou"
-  ) {
-    const visibleIndex = currentIndex();
-
-    if (visibleIndex !== camouLastViewedSection) {
-      camouLastViewedSection = visibleIndex;
-
-      camouPrioritizeSection(visibleIndex);
-    }
-  }
-
-  // Normale CAMOU-Navigation wiederherstellen.
+  // Zurueck auf CAMOU:
+  // normale Bereichsanzeige wiederherstellen.
   camouOriginalIndicator();
 };
 
@@ -6372,3 +6198,4 @@ handleGlobeClick = function(event) {
 camouCreatePortal();
 
 /* ENDE CAMOU PROJEKTPLANET 02 */
+
