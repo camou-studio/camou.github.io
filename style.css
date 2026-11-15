@@ -280,7 +280,6 @@ body.camou-intro-done .experience { opacity: 1; transform: none; }
 
 /* CAMOU INTRO – echte Szene bleibt sichtbar; Pixelraster gibt sie frei */
 .camou-loading .experience { opacity: 1 !important; transform: none !important; }
-.camou-loading .topbar .logo { opacity: 0; }
 .camou-loading .navigation,
 .camou-loading .top-note,
 .camou-loading .zoom-controls,
@@ -310,8 +309,11 @@ body.camou-intro-done .experience { opacity: 1; transform: none; }
 }
 .camou-pixel-reveal__cell.is-open { opacity: 0; transform: scale(.72); }
 .camou-intro-transitioning .camou-intro__loader { opacity: 0; }
-.camou-intro-transitioning .topbar .logo { opacity: 0; }
-.camou-intro-done .topbar .logo { opacity: 1; transition: opacity .2s ease; }
 @media (prefers-reduced-motion: reduce) {
   .camou-pixel-reveal__cell { transition-duration: .01ms !important; }
 }
+
+/* Korrektur: Das Navigationslogo bleibt während des gesamten Intros unverändert. */
+.camou-loading .topbar .logo,
+.camou-intro-transitioning .topbar .logo,
+.camou-intro-done .topbar .logo { opacity: 1 !important; }

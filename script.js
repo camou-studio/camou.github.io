@@ -103,24 +103,30 @@ function camouSetIntroProgress(value, status) {
 
 function camouFinishIntro() {
   const intro = $("camou-intro");
-  const introBrand = $("camou-intro-brand");
-  const navBrand = $("logo");
   const pixelLayer = $("camou-pixel-reveal");
   if (!intro || intro.dataset.transitionStarted === "true") return;
 
   intro.dataset.transitionStarted = "true";
-  camouSetIntroProgress(100, "HOME WIRD GEÖFFNET");
+  camouSetIntroProgress(100, "STARTSEITE WIRD SICHTBAR");
   document.body.classList.remove("camou-loading");
   document.body.classList.add("camou-intro-transitioning");
 
-  // Die bereits gerenderte Three.js-Szene wird in einem gestaffelten
-  // Raster freigegeben. Die Zellen liegen über der echten Szene,
-  // nicht über einem Screenshot oder einem Ersatzhintergrund.
+  // HOME ist bis hierhin bewusst nur mit seiner Überschrift sichtbar.
+  // Jetzt wird die vollständige HOME-Fläche auf derselben Kugel aufgebaut;
+  // das Pixelraster gibt sie anschließend schrittweise frei.
+  if (globeContext && globeTexture && camouHomeImage) {
+    drawWrappedPanel(globeContext, 0, camouHomeImage, false);
+    globeTexture.needsUpdate = true;
+    sceneNeedsRender = true;
+  }
+
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const cells = [];
   if (pixelLayer) {
     pixelLayer.replaceChildren();
-    const total = 18 * 11;
+    const columns = 18;
+    const rows = 11;
+    const total = columns * rows;
     for (let i = 0; i < total; i++) {
       const cell = document.createElement("span");
       cell.className = "camou-pixel-reveal__cell";
@@ -136,26 +142,9 @@ function camouFinishIntro() {
   const revealDuration = reducedMotion ? 20 : 1750;
   window.setTimeout(() => {
     if (pixelLayer) pixelLayer.remove();
-    if (introBrand && navBrand && typeof introBrand.animate === "function") {
-      const from = introBrand.getBoundingClientRect();
-      const to = navBrand.getBoundingClientRect();
-      const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
-      const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
-      const scale = to.width / from.width;
-      const flight = introBrand.animate([
-        { transform: "translate(-50%, -50%) scale(1)" },
-        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})` }
-      ], { duration: reducedMotion ? 1 : 1050, easing: "cubic-bezier(.2,.76,.22,1)", fill: "forwards" });
-      flight.finished.catch(() => {}).then(() => {
-        intro.remove();
-        document.body.classList.remove("camou-intro-transitioning");
-        document.body.classList.add("camou-intro-done");
-      });
-    } else {
-      intro.remove();
-      document.body.classList.remove("camou-intro-transitioning");
-      document.body.classList.add("camou-intro-done");
-    }
+    intro.remove();
+    document.body.classList.remove("camou-intro-transitioning");
+    document.body.classList.add("camou-intro-done");
   }, revealDuration);
 }
 
@@ -719,6 +708,7 @@ let pinchAngle = 0;
 let globeCanvas = null;
 let globeContext = null;
 let globeTexture = null;
+let camouHomeImage = null;
 let baseTextureCanvas = null;
 let sceneNeedsRender = true;
 
@@ -2327,13 +2317,23 @@ function paintPhoto(
   ctx.restore();
 }
 
-function drawPanel(ctx, index, image) {
+function drawPanel(ctx, index, image, introOnly = false) {
   const section = sections[index];
   const p = PLACES[index];
   const textX = p.textX;
 
   ctx.save();
   ctx.textAlign = "center";
+
+  if (introOnly) {
+    ctx.fillStyle = "#f0f2eb";
+    ctx.font = "300 58px Manrope, Arial";
+    section.title.forEach((line, i) => {
+      ctx.fillText(line, textX, -247 + i * 68, 600);
+    });
+    ctx.restore();
+    return;
+  }
 
   // Dezente Linie statt rechteckiger Bereichsgrenze.
   ctx.strokeStyle = "rgba(207,226,200,.27)";
@@ -2431,13 +2431,13 @@ function drawPanel(ctx, index, image) {
   ctx.restore();
 }
 
-function drawWrappedPanel(ctx, index, image) {
+function drawWrappedPanel(ctx, index, image, introOnly = false) {
   eachIslandInstance(
     index,
     (x, y, p) => {
       ctx.save();
       islandTransform(ctx, x, y, p);
-      drawPanel(ctx, index, image);
+      drawPanel(ctx, index, image, introOnly);
       ctx.restore();
     }
   );
@@ -2524,6 +2524,7 @@ async function createGlobeTexture() {
 
   // Beim Start wird nur das HOME-Bild angefordert.
   const homeImage = await loadImage(ASSETS.home);
+  camouHomeImage = homeImage;
   camouSetIntroProgress(58, "KUGEL WIRD AUFGEBAUT");
   await canvasFontsReady;
   camouSetIntroProgress(82, "LETZTE DETAILS");
@@ -2536,7 +2537,7 @@ async function createGlobeTexture() {
   drawBackground(globeContext, MAP_W, MAP_H);
 
   // Als erstes nur HOME auf der V2-Kugel bereitstellen.
-  drawWrappedPanel(globeContext, 0, homeImage);
+  drawWrappedPanel(globeContext, 0, homeImage, true);
 
   globeTexture = new THREE.CanvasTexture(globeCanvas);
   globeTexture.colorSpace = THREE.SRGBColorSpace;
