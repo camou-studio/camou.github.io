@@ -1,3 +1,17 @@
+@font-face {
+  font-family: "Manrope";
+  src: url("./fonts/manrope_5.3.0_latin-wght-normal.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "DM Mono";
+  src: url("./fonts/dm-mono-v16-latin-500.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
 :root {
   --bg: #101411;
   --fg: #edf1e9;
@@ -261,4 +275,43 @@ body.camou-intro-done .experience { opacity: 1; transform: none; }
 @media (prefers-reduced-motion:reduce) {
   .camou-intro__horizon { animation:none; }
   .camou-intro::before,.camou-intro__atmosphere,.camou-intro__loader,.experience { transition-duration:.01ms !important; }
+}
+
+
+/* CAMOU INTRO – echte Szene bleibt sichtbar; Pixelraster gibt sie frei */
+.camou-loading .experience { opacity: 1 !important; transform: none !important; }
+.camou-loading .topbar .logo { opacity: 0; }
+.camou-loading .navigation,
+.camou-loading .top-note,
+.camou-loading .zoom-controls,
+.camou-loading .interaction-hint,
+.camou-loading .section-indicator,
+.camou-loading .footer { visibility: hidden !important; }
+.camou-intro { background: transparent !important; pointer-events: none; }
+.camou-intro::before { background: transparent !important; }
+.camou-intro__atmosphere { opacity: 0 !important; }
+.camou-intro__brand {
+  position: absolute; left: 50%; top: 50%; margin: 0;
+  width: max-content; font-family: var(--sans); font-size: clamp(48px, 8vw, 76px);
+  font-weight: 800; letter-spacing: -1.5px; padding: 0;
+  transform: translate(-50%, -50%); transform-origin: center; white-space: nowrap;
+  color: var(--fg); text-shadow: none; will-change: transform;
+}
+.camou-intro__brand span { color: var(--accent); }
+.camou-intro__loader { transition: opacity .45s ease; }
+.camou-pixel-reveal {
+  position: fixed; z-index: 2; inset: 0; display: grid;
+  grid-template-columns: repeat(18, 1fr); grid-template-rows: repeat(11, 1fr);
+  pointer-events: none;
+}
+.camou-pixel-reveal__cell {
+  background: #101713; opacity: 1; transform: scale(1.015);
+  transition: opacity .48s ease, transform .58s cubic-bezier(.2,.7,.2,1);
+}
+.camou-pixel-reveal__cell.is-open { opacity: 0; transform: scale(.72); }
+.camou-intro-transitioning .camou-intro__loader { opacity: 0; }
+.camou-intro-transitioning .topbar .logo { opacity: 0; }
+.camou-intro-done .topbar .logo { opacity: 1; transition: opacity .2s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .camou-pixel-reveal__cell { transition-duration: .01ms !important; }
 }

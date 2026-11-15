@@ -105,6 +105,7 @@ function camouFinishIntro() {
   const intro = $("camou-intro");
   const introBrand = $("camou-intro-brand");
   const navBrand = $("logo");
+  const pixelLayer = $("camou-pixel-reveal");
   if (!intro || intro.dataset.transitionStarted === "true") return;
 
   intro.dataset.transitionStarted = "true";
@@ -112,34 +113,50 @@ function camouFinishIntro() {
   document.body.classList.remove("camou-loading");
   document.body.classList.add("camou-intro-transitioning");
 
+  // Die bereits gerenderte Three.js-Szene wird in einem gestaffelten
+  // Raster freigegeben. Die Zellen liegen über der echten Szene,
+  // nicht über einem Screenshot oder einem Ersatzhintergrund.
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const duration = reducedMotion ? 1 : 1150;
-
-  if (introBrand && navBrand && typeof introBrand.animate === "function") {
-    // Logo-Zielpunkt und Zielgroesse direkt aus der Navigationsleiste messen.
-    const from = introBrand.getBoundingClientRect();
-    const to = navBrand.getBoundingClientRect();
-    const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
-    const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
-    const scale = to.width / from.width;
-
-    const flight = introBrand.animate([
-      { transform: "translate(-50%, -50%) scale(1)" },
-      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})` }
-    ], { duration, easing: "cubic-bezier(.2,.76,.22,1)", fill: "forwards" });
-
-    flight.finished.catch(() => {}).then(() => {
-      intro.remove();
-      document.body.classList.remove("camou-intro-transitioning");
-      document.body.classList.add("camou-intro-done");
+  const cells = [];
+  if (pixelLayer) {
+    pixelLayer.replaceChildren();
+    const total = 18 * 11;
+    for (let i = 0; i < total; i++) {
+      const cell = document.createElement("span");
+      cell.className = "camou-pixel-reveal__cell";
+      cell.style.transitionDelay = reducedMotion ? "0ms" : `${((i * 37) % total) * 9}ms`;
+      pixelLayer.appendChild(cell);
+      cells.push(cell);
+    }
+    requestAnimationFrame(() => {
+      cells.forEach(cell => cell.classList.add("is-open"));
     });
-  } else {
-    window.setTimeout(() => {
+  }
+
+  const revealDuration = reducedMotion ? 20 : 1750;
+  window.setTimeout(() => {
+    if (pixelLayer) pixelLayer.remove();
+    if (introBrand && navBrand && typeof introBrand.animate === "function") {
+      const from = introBrand.getBoundingClientRect();
+      const to = navBrand.getBoundingClientRect();
+      const dx = (to.left + to.width / 2) - (from.left + from.width / 2);
+      const dy = (to.top + to.height / 2) - (from.top + from.height / 2);
+      const scale = to.width / from.width;
+      const flight = introBrand.animate([
+        { transform: "translate(-50%, -50%) scale(1)" },
+        { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(${scale})` }
+      ], { duration: reducedMotion ? 1 : 1050, easing: "cubic-bezier(.2,.76,.22,1)", fill: "forwards" });
+      flight.finished.catch(() => {}).then(() => {
+        intro.remove();
+        document.body.classList.remove("camou-intro-transitioning");
+        document.body.classList.add("camou-intro-done");
+      });
+    } else {
       intro.remove();
       document.body.classList.remove("camou-intro-transitioning");
       document.body.classList.add("camou-intro-done");
-    }, duration);
-  }
+    }
+  }, revealDuration);
 }
 
 const clamp = (v, min, max) =>
