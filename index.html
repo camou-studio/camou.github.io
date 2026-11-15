@@ -1,43 +1,129 @@
+
 <!doctype html>
 <html lang="de-CH">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101411">
-  <meta name="color-scheme" content="dark">
 
-  <title>b3nn3t - projekt camOu — Independent Artist | Musik, Visuals &amp; Kontakt</title>
-  <meta name="description" content="b3nn3t - projekt camOu — Independent Artist. Gleiche Fragen. Neuer Cosmos. Entdecke Musik, Visuals und Echoes oder nimm Kontakt auf.">
-  <meta name="robots" content="index, follow, max-image-preview:large">
+  <!-- CAMOU / BASIS -->
+  <meta name="theme-color" content="#101411">
+
+  <title>b3nn3t - projekt camOu — Independent Artist | Musik, Visuals & Kontakt</title>
+
+  <meta
+    name="description"
+    content="b3nn3t - projekt camOu — Independent Artist. Gleiche Fragen. Neuer Cosmos. Entdecke Musik, Visuals und Echoes oder nimm Kontakt auf."
+  >
+
+  <meta
+    name="robots"
+    content="index, follow, max-image-preview:large"
+  >
 
   <!-- DOMAIN / CANONICAL -->
-  <link rel="canonical" href="https://camou.ch/">
-  <link rel="alternate" hreflang="de-CH" href="https://camou.ch/">
-  <link rel="alternate" hreflang="x-default" href="https://camou.ch/">
+  <link
+    rel="canonical"
+    href="https://camou.ch/"
+  >
 
-  <!-- FAVICONS -->
-  <link rel="icon" href="/favicon.ico" sizes="any">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/png" href="/favicon-16.png" sizes="16x16">
-  <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
-  <link rel="icon" type="image/png" href="/favicon-48.png" sizes="48x48">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+  <link
+    rel="alternate"
+    hreflang="de-CH"
+    href="https://camou.ch/"
+  >
+
+  <link
+    rel="alternate"
+    hreflang="x-default"
+    href="https://camou.ch/"
+  >
+
+  <!-- CAMOU / FAVICONS -->
+  <link
+    rel="icon"
+    href="/favicon.ico"
+    sizes="any"
+  >
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="/favicon.svg"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="/favicon-16.png"
+    sizes="16x16"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="/favicon-32.png"
+    sizes="32x32"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="/favicon-48.png"
+    sizes="48x48"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="/apple-touch-icon.png"
+    sizes="180x180"
+  >
 
   <!-- OPEN GRAPH / SOCIAL MEDIA -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="camOu">
-  <meta property="og:title" content="b3nn3t - projekt camOu — Independent Artist">
-  <meta property="og:description" content="Gleiche Fragen. Neuer Cosmos. Musik, Visuals und mehr von camOu.">
-  <meta property="og:url" content="https://camou.ch/">
+
+  <meta
+    property="og:title"
+    content="b3nn3t - projekt camOu — Independent Artist"
+  >
+
+  <meta
+    property="og:description"
+    content="Gleiche Fragen. Neuer Cosmos. Musik, Visuals und mehr von camOu."
+  >
+
+  <meta
+    property="og:url"
+    content="https://camou.ch/"
+  >
+
   <meta property="og:locale" content="de_CH">
-  <!-- Sobald ein freigegebenes Vorschaubild bereitsteht, og:image und twitter:image ergänzen. -->
+
+  <!--
+    Sobald ein Vorschaubild vorhanden ist:
+
+    <meta
+      property="og:image"
+      content="https://camou.ch/assets/og-camou.jpg"
+    >
+
+    Empfohlene Bildgrösse: 1200 x 630 Pixel.
+  -->
 
   <!-- TWITTER / X -->
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="b3nn3t - projekt camOu — Independent Artist">
-  <meta name="twitter:description" content="Gleiche Fragen. Neuer Cosmos. Musik, Visuals und mehr von camOu.">
 
-  <!-- SCHEMA.ORG -->
+  <meta
+    name="twitter:title"
+    content="b3nn3t - projekt camOu — Independent Artist"
+  >
+
+  <meta
+    name="twitter:description"
+    content="Gleiche Fragen. Neuer Cosmos. Musik, Visuals und mehr von camOu."
+  >
+
+  <!-- SCHEMA.ORG / STRUKTURIERTE DATEN -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -57,19 +143,62 @@
         "name": "b3nn3t - projekt camOu — Independent Artist",
         "description": "Musik, Visuals, Echoes und Kontakt von camOu.",
         "inLanguage": "de-CH",
-        "isPartOf": { "@id": "https://camou.ch/#website" }
+        "isPartOf": {
+          "@id": "https://camou.ch/#website"
+        }
       }
     ]
   }
   </script>
 
-  <!-- THREE.JS / LOKALE SCHRIFTEN -->
+  <!-- THREE.JS CDN frueh verbinden und das Modul vorladen. -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preload" href="./fonts/manrope_5.3.0_latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="./fonts/dm-mono-v16-latin-500.woff2" as="font" type="font/woff2" crossorigin>
+  <link
+    rel="modulepreload"
+    href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.min.js"
+    crossorigin
+  >
+<!-- CAMOU: LOKALE SCHRIFTEN -->
 
+<!-- Manrope frueh laden -->
+<link
+  rel="preload"
+  href="./fonts/manrope_5.3.0_latin-wght-normal.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+>
+
+<!-- DM Mono Medium frueh laden -->
+<link
+  rel="preload"
+  href="./fonts/dm-mono-v16-latin-500.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+>
+
+<!-- DM Mono Regular wird ebenfalls auf der Kugel verwendet. -->
+<link
+  rel="preload"
+  href="./fonts/dm-mono-v16-latin-regular.woff2"
+  as="font"
+  type="font/woff2"
+  crossorigin
+>
+
+<!-- Das HOME-Motiv ist das erste sichtbare Bild. -->
+<link
+  rel="preload"
+  href="./assets/hero.jpg"
+  as="image"
+  fetchpriority="high"
+>
+
+  <!-- CAMOU / STYLES -->
   <link rel="stylesheet" href="style.css">
 
+  <!-- THREE.JS IMPORT MAP -->
   <script type="importmap">
     {
       "imports": {
@@ -77,102 +206,362 @@
       }
     }
   </script>
-  <script type="module" src="script.js"></script>
-</head>
-<body>
-  <main class="experience">
-    <header class="topbar">
-      <a class="logo" href="#" id="logo" aria-label="camOu – zur Startansicht">camOu<span>.</span></a>
 
-      <nav class="navigation" aria-label="Hauptnavigation">
-        <button class="nav-link active" type="button" data-section="0" aria-current="page">Home</button>
-        <button class="nav-link" type="button" data-section="1">Music</button>
-        <button class="nav-link" type="button" data-section="2">Visuals</button>
-        <button class="nav-link" type="button" data-section="3">Echoes</button>
-        <button class="nav-link" type="button" data-section="4">Contact</button>
+  <!-- CAMOU / JAVASCRIPT -->
+  <script type="module" src="script.js"></script>
+
+</head>
+
+<body>
+
+  <main class="experience">
+
+    <!-- HEADER -->
+    <header class="topbar">
+
+      <a
+        class="logo"
+        href="#"
+        id="logo"
+      >
+        camOu<span>.</span>
+      </a>
+
+      <!-- NAVIGATION -->
+      <nav
+        class="navigation"
+        aria-label="Hauptnavigation"
+      >
+
+        <button
+          class="nav-link active"
+          data-section="0"
+        >
+          Home
+        </button>
+
+        <button
+          class="nav-link"
+          data-section="1"
+        >
+          Music
+        </button>
+
+        <button
+          class="nav-link"
+          data-section="2"
+        >
+          Visuals
+        </button>
+
+        <button
+          class="nav-link"
+          data-section="3"
+        >
+          Echoes
+        </button>
+
+        <button
+          class="nav-link"
+          data-section="4"
+        >
+          Contact
+        </button>
+
       </nav>
 
-      <div class="top-note">PROJECT</div>
+      <div class="top-note">
+         PROJECT
+      </div>
+
     </header>
 
-    <section class="globe-stage" aria-label="Drehbare Camou-Kugel">
+    <!-- CAMOU / 3D GLOBE -->
+    <section
+      class="globe-stage"
+      aria-label="Drehbare Camou-Kugel"
+    >
+
       <div id="globe"></div>
 
-      <!-- CONTACT MODAL: script.js verschiebt den Dialog direkt unter body. -->
-      <div class="contact-modal" id="contact-modal" hidden role="dialog" aria-modal="true" aria-labelledby="contact-modal-title" tabindex="-1">
-        <div class="contact-modal-backdrop" data-close-contact></div>
-        <div class="contact-modal-panel" role="document">
+      <!-- CAMOU STARTUP: Die Kugel bleibt waehrend der Vorbereitung sichtbar. -->
+      <div id="camou-intro" class="camou-intro" role="status" aria-live="polite">
+        <div class="camou-intro-kicker">CAMOU / SYSTEM START</div>
+        <div class="camou-intro-progress" aria-hidden="true">
+          <span id="camou-intro-progress-fill"></span>
+        </div>
+        <div class="camou-intro-bottom">
+          <span id="camou-intro-status">KOSMOS WIRD VORBEREITET</span>
+          <span id="camou-intro-percent">00%</span>
+        </div>
+        <div class="camou-intro-pixels" aria-hidden="true">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+
+      <!-- CONTACT MODAL -->
+      <div
+        class="contact-modal"
+        id="contact-modal"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+      >
+
+        <div
+          class="contact-modal-backdrop"
+          data-close-contact
+        ></div>
+
+        <div class="contact-modal-panel">
+
           <div class="contact-modal-header">
-            <span id="contact-modal-title">camOu / CONTACT</span>
-            <button type="button" id="contact-modal-close" aria-label="Kontaktfenster schliessen">&times;</button>
+
+            <span id="contact-modal-title">
+              camOu / CONTACT
+            </span>
+
+            <button
+              type="button"
+              id="contact-modal-close"
+              aria-label="Kontaktfenster schliessen"
+            >
+              &times;
+            </button>
+
           </div>
 
-          <form id="contact-form" class="contact-modal-form">
-            <p>Für Anfragen und Zusammenarbeit. Oder einfach so.</p>
+          <!-- CONTACT FORM -->
+          <form
+            id="contact-form"
+            class="contact-modal-form"
+          >
 
-            <label>Name
-              <input name="name" type="text" autocomplete="name" maxlength="120" required>
+            <p>
+              Für Anfragen und Zusammenarbeit.
+              Oder einfach so.
+            </p>
+
+            <label>
+              Name
+              <input
+                name="name"
+                type="text"
+                autocomplete="name"
+                maxlength="120"
+                required
+              >
             </label>
 
-            <label>E-Mail
-              <input name="email" type="email" autocomplete="email" maxlength="120" required>
+            <label>
+              E-Mail
+              <input
+                name="email"
+                type="email"
+                autocomplete="email"
+                maxlength="120"
+                required
+              >
             </label>
 
-            <label>Betreff
-              <input name="subject" type="text" maxlength="120" required>
+            <label>
+              Betreff
+              <input
+                name="subject"
+                type="text"
+                maxlength="120"
+                required
+              >
             </label>
 
-            <label>Nachricht
-              <textarea name="message" rows="5" maxlength="1200" required></textarea>
+            <label>
+              Nachricht
+              <textarea
+                name="message"
+                rows="5"
+                maxlength="1200"
+                required
+              ></textarea>
             </label>
 
+            <!-- DATENSCHUTZ -->
             <label class="contact-privacy">
-              <input name="privacy" type="checkbox" required>
-              <span>Ich stimme der Verarbeitung meiner Angaben zur Bearbeitung der Anfrage zu.
-                <a href="impressum.html" target="_blank" rel="noopener noreferrer">Impressum / Datenschutz</a>
+
+              <input
+                name="privacy"
+                type="checkbox"
+                required
+              >
+
+              <span>
+                Ich stimme der Verarbeitung meiner
+                Angaben zur Bearbeitung der Anfrage zu.
+
+                <a
+                  href="impressum.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Impressum / Datenschutz
+                </a>
               </span>
+
             </label>
 
-            <button type="submit" id="contact-submit">NACHRICHT SENDEN ↗</button>
-            <p id="contact-status" class="contact-status" role="status" aria-live="polite"></p>
+            <!-- SUBMIT -->
+            <button
+              type="submit"
+              id="contact-submit"
+            >
+              NACHRICHT SENDEN ↗
+            </button>
+
+            <p
+              id="contact-status"
+              class="contact-status"
+              role="status"
+              aria-live="polite"
+            ></p>
+
           </form>
+
         </div>
+
       </div>
 
       <!-- SPOTIFY MODAL -->
-      <div class="spotify-modal" id="spotify-modal" hidden role="dialog" aria-modal="true" aria-label="Spotify-Musikplayer" tabindex="-1">
-        <div class="spotify-modal-backdrop" data-close-spotify></div>
-        <div class="spotify-modal-panel" role="document">
+      <!--
+        Hinweis:
+        Der Spotify-Link verweist aktuell
+        noch auf b3nn3t.
+
+        Vor der Veröffentlichung bitte
+        durch den Camou-Link ersetzen.
+      -->
+
+      <div
+        class="spotify-modal"
+        id="spotify-modal"
+        hidden
+        role="dialog"
+        aria-modal="true"
+        aria-label="Spotify-Musikplayer"
+      >
+
+        <div
+          class="spotify-modal-backdrop"
+          data-close-spotify
+        ></div>
+
+        <div
+          class="spotify-modal-panel"
+          role="document"
+        >
+
           <div class="spotify-modal-header">
-            <span>camOu / MUSIK</span>
-            <button type="button" id="spotify-modal-close" aria-label="Spotify-Fenster schliessen">&times;</button>
+
+            <span>
+              camOu / MUSIK
+            </span>
+
+            <button
+              type="button"
+              id="spotify-modal-close"
+              aria-label="Spotify-Fenster schliessen"
+            >
+              &times;
+            </button>
+
           </div>
-          <iframe id="spotify-modal-player" title="Spotify Musikplayer" data-src="https://open.spotify.com/embed/artist/7pajHvUWNCnOPhDPyH4M6x?theme=0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+
+          <iframe
+            id="spotify-modal-player"
+            title="Spotify Musikplayer"
+            data-src="https://open.spotify.com/embed/artist/7pajHvUWNCnOPhDPyH4M6x?theme=0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+          ></iframe>
+
         </div>
+
       </div>
 
-      <div class="zoom-controls" role="group" aria-label="Zoom">
-        <button type="button" id="zoom-in" aria-label="Vergrössern">+</button>
-        <button type="button" id="zoom-out" aria-label="Verkleinern">−</button>
-        <button type="button" id="zoom-reset" aria-label="Zoom zurücksetzen">↺</button>
+      <!-- ZOOM CONTROLS -->
+      <div
+        class="zoom-controls"
+        aria-label="Zoom"
+      >
+
+        <button
+          id="zoom-in"
+          aria-label="Vergrössern"
+        >
+          +
+        </button>
+
+        <button
+          id="zoom-out"
+          aria-label="Verkleinern"
+        >
+          −
+        </button>
+
+        <button
+          id="zoom-reset"
+          aria-label="Zoom zurücksetzen"
+        >
+          ↺
+        </button>
+
       </div>
 
-      <div class="interaction-hint" id="hint">
-        <span class="hint-dot" aria-hidden="true"></span>
+      <!-- INTERACTION HINT -->
+      <div
+        class="interaction-hint"
+        id="hint"
+      >
+
+        <span class="hint-dot"></span>
+
         DRAG TO EXPLORE
+
       </div>
 
-      <div class="section-indicator" aria-live="polite">
-        <span id="current-section">HOME</span>
-        <span class="indicator-line" aria-hidden="true"></span>
-        <span id="section-number">01 / 05</span>
+      <!-- SECTION INDICATOR -->
+      <div class="section-indicator">
+
+        <span id="current-section">
+          HOME
+        </span>
+
+        <span class="indicator-line"></span>
+
+        <span id="section-number">
+          01 / 05
+        </span>
+
       </div>
+
     </section>
 
+    <!-- FOOTER -->
     <footer class="footer">
-      <a class="footer-impressum" href="impressum.html">Impressum</a>
-      <span class="footer-signature"><a href="https://www.b3nn3t.com" target="_blank" rel="noopener noreferrer">b3nn3t</a> — independent artist</span>
+
+      <a
+        class="footer-impressum"
+        href="impressum.html"
+      >
+        Impressum
+      </a>
+
+      <span class="footer-signature">
+        <a href="https://www.b3nn3t.com" target="_blank" rel="noopener noreferrer">b3nn3t</a> — independent artist   
+      </span>
+
     </footer>
+
   </main>
+
 </body>
 </html>
