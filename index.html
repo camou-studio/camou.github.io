@@ -1,529 +1,73 @@
-
 <!doctype html>
-<html lang="de-CH">
+<html lang="de">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- CAMOU / BASIS -->
   <meta name="theme-color" content="#101411">
-
-  <title>camou — Independent Artist | Musik, Visuals & Kontakt</title>
-
-  <meta
-    name="description"
-    content="camou — Independent Artist. Gleiche Fragen. Neue Perspektiven. Entdecke Musik, Visuals und Echoes oder nimm Kontakt auf."
-  >
-
-  <meta
-    name="robots"
-    content="index, follow, max-image-preview:large"
-  >
-
-  <!-- DOMAIN / CANONICAL -->
-  <link
-    rel="canonical"
-    href="https://camou.ch/"
-  >
-
-  <link
-    rel="alternate"
-    hreflang="de-CH"
-    href="https://camou.ch/"
-  >
-
-  <link
-    rel="alternate"
-    hreflang="x-default"
-    href="https://camou.ch/"
-  >
-
-  <!-- CAMOU / FAVICONS -->
-  <link
-    rel="icon"
-    href="/favicon.ico"
-    sizes="any"
-  >
-
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href="/favicon.svg"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="/favicon-16.png"
-    sizes="16x16"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="/favicon-32.png"
-    sizes="32x32"
-  >
-
-  <link
-    rel="icon"
-    type="image/png"
-    href="/favicon-48.png"
-    sizes="48x48"
-  >
-
-  <link
-    rel="apple-touch-icon"
-    href="/apple-touch-icon.png"
-    sizes="180x180"
-  >
-
-  <!-- OPEN GRAPH / SOCIAL MEDIA -->
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="camou">
-
-  <meta
-    property="og:title"
-    content="camou — Independent Artist"
-  >
-
-  <meta
-    property="og:description"
-    content="Gleiche Fragen. Neue Perspektiven. Musik, Visuals und mehr von camou."
-  >
-
-  <meta
-    property="og:url"
-    content="https://camou.ch/"
-  >
-
-  <meta property="og:locale" content="de_CH">
-
-  <!--
-    Sobald ein Vorschaubild vorhanden ist:
-
-    <meta
-      property="og:image"
-      content="https://camou.ch/assets/og-camou.jpg"
-    >
-
-    Empfohlene Bildgrösse: 1200 x 630 Pixel.
-  -->
-
-  <!-- TWITTER / X -->
-  <meta name="twitter:card" content="summary">
-
-  <meta
-    name="twitter:title"
-    content="camou — Independent Artist"
-  >
-
-  <meta
-    name="twitter:description"
-    content="Gleiche Fragen. Neue Perspektiven. Musik, Visuals und mehr von camou."
-  >
-
-  <!-- SCHEMA.ORG / STRUKTURIERTE DATEN -->
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@graph": [
-      {
-        "@type": "WebSite",
-        "@id": "https://camou.ch/#website",
-        "url": "https://camou.ch/",
-        "name": "camou",
-        "description": "camou — Gleiche Fragen. Neue Perspektiven.",
-        "inLanguage": "de-CH"
-      },
-      {
-        "@type": "WebPage",
-        "@id": "https://camou.ch/#webpage",
-        "url": "https://camou.ch/",
-        "name": "camou — Independent Artist",
-        "description": "Musik, Visuals, Echoes und Kontakt von camou.",
-        "inLanguage": "de-CH",
-        "isPartOf": {
-          "@id": "https://camou.ch/#website"
-        }
-      }
-    ]
-  }
-  </script>
-
-
-<!-- CAMOU: LOKALE SCHRIFTEN -->
-
-<!-- Manrope frueh laden -->
-<link
-  rel="preload"
-  href="./fonts/manrope_5.3.0_latin-wght-normal.woff2"
-  as="font"
-  type="font/woff2"
-  crossorigin
->
-
-<!-- DM Mono Medium frueh laden -->
-<link
-  rel="preload"
-  href="./fonts/dm-mono-v16-latin-500.woff2"
-  as="font"
-  type="font/woff2"
-  crossorigin
->
-
-  <!-- CAMOU / STYLES -->
+  <meta name="description" content="camou — Gleiche Fragen. Neue Perspektiven.">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" crossorigin>
+  <link rel="preload" href="./assets/hero.jpg" as="image" fetchpriority="high">
+  <title>camou — independent artist</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-
-  <!-- THREE.JS IMPORT MAP -->
   <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
-      }
-    }
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}
   </script>
-
-  <!-- CAMOU / JAVASCRIPT -->
   <script type="module" src="script.js"></script>
-
 </head>
-
-<body>
-
-  <main class="experience">
-
-    <!-- HEADER -->
-    <header class="topbar">
-
-      <a
-        class="logo"
-        href="#"
-        id="logo"
-      >
-        camou<span>.</span>
-      </a>
-
-      <!-- NAVIGATION -->
-      <nav
-        class="navigation"
-        aria-label="Hauptnavigation"
-      >
-
-        <button
-          class="nav-link active"
-          data-section="0"
-        >
-          Home
-        </button>
-
-        <button
-          class="nav-link"
-          data-section="1"
-        >
-          Music
-        </button>
-
-        <button
-          class="nav-link"
-          data-section="2"
-        >
-          Visuals
-        </button>
-
-        <button
-          class="nav-link"
-          data-section="3"
-        >
-          Echoes
-        </button>
-
-        <button
-          class="nav-link"
-          data-section="4"
-        >
-          Contact
-        </button>
-
-      </nav>
-
-      <div class="top-note">
-        INDEPENDENT ARTIST
+<body class="camou-loading">
+  <div class="camou-intro" id="camou-intro" role="status" aria-live="polite" aria-label="CAMOU wird geladen">
+    <div class="camou-intro__atmosphere" aria-hidden="true">
+      <div class="camou-intro__horizon"></div>
+    </div>
+    <div class="camou-intro__brand" aria-label="camou">camou<span>.</span></div>
+    <div class="camou-intro__loader">
+      <div class="camou-intro__status" id="camou-intro-status">EXPERIENCE WIRD VORBEREITET</div>
+      <div class="camou-intro__track" aria-hidden="true">
+        <span class="camou-intro__progress" id="camou-intro-progress"></span>
       </div>
-
+      <div class="camou-intro__percent" id="camou-intro-percent">08%</div>
+    </div>
+  </div>
+  <main class="experience">
+    <header class="topbar">
+      <a class="logo" href="#" id="logo">camou<span>.</span></a>
+      <nav class="navigation" aria-label="Hauptnavigation">
+        <button class="nav-link active" data-section="0">Home</button>
+        <button class="nav-link" data-section="1">Music</button>
+        <button class="nav-link" data-section="2">Visuals</button>
+        <button class="nav-link" data-section="3">Archive</button>
+        <button class="nav-link" data-section="4">Contact</button>
+      </nav>
+      <div class="top-note">INDEPENDENT ARTIST / SWITZERLAND</div>
     </header>
 
-    <!-- CAMOU / 3D GLOBE -->
-    <section
-      class="globe-stage"
-      aria-label="Drehbare Camou-Kugel"
-    >
-
+    <section class="globe-stage" aria-label="Drehbare Camou-Kugel">
       <div id="globe"></div>
-
-      <!-- CONTACT MODAL -->
-      <div
-        class="contact-modal"
-        id="contact-modal"
-        hidden
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="contact-modal-title"
-      >
-
-        <div
-          class="contact-modal-backdrop"
-          data-close-contact
-        ></div>
-
-        <div class="contact-modal-panel">
-
-          <div class="contact-modal-header">
-
-            <span id="contact-modal-title">
-              CAMOU / CONTACT
-            </span>
-
-            <button
-              type="button"
-              id="contact-modal-close"
-              aria-label="Kontaktfenster schliessen"
-            >
-              &times;
-            </button>
-
-          </div>
-
-          <!-- CONTACT FORM -->
-          <form
-            id="contact-form"
-            class="contact-modal-form"
-          >
-
-            <p>
-              Für Anfragen und Zusammenarbeit.
-              Oder einfach so.
-            </p>
-
-            <label>
-              Name
-              <input
-                name="name"
-                type="text"
-                autocomplete="name"
-                maxlength="120"
-                required
-              >
-            </label>
-
-            <label>
-              E-Mail
-              <input
-                name="email"
-                type="email"
-                autocomplete="email"
-                maxlength="120"
-                required
-              >
-            </label>
-
-            <label>
-              Betreff
-              <input
-                name="subject"
-                type="text"
-                maxlength="120"
-                required
-              >
-            </label>
-
-            <label>
-              Nachricht
-              <textarea
-                name="message"
-                rows="5"
-                maxlength="1200"
-                required
-              ></textarea>
-            </label>
-
-            <!-- DATENSCHUTZ -->
-            <label class="contact-privacy">
-
-              <input
-                name="privacy"
-                type="checkbox"
-                required
-              >
-
-              <span>
-                Ich stimme der Verarbeitung meiner
-                Angaben zur Bearbeitung der Anfrage zu.
-
-                <a
-                  href="impressum.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Impressum / Datenschutz
-                </a>
-              </span>
-
-            </label>
-
-            <!-- SUBMIT -->
-            <button
-              type="submit"
-              id="contact-submit"
-            >
-              NACHRICHT SENDEN ↗
-            </button>
-
-            <p
-              id="contact-status"
-              class="contact-status"
-              role="status"
-              aria-live="polite"
-            ></p>
-
-          </form>
-
-        </div>
-
+      <div class="zoom-controls" aria-label="Zoom">
+        <button id="zoom-in" aria-label="Vergrößern">+</button>
+        <button id="zoom-out" aria-label="Verkleinern">−</button>
+        <button id="zoom-reset" aria-label="Zoom zurücksetzen">↺</button>
       </div>
-
-      <!-- SPOTIFY MODAL -->
-      <!--
-        Hinweis:
-        Der Spotify-Link verweist aktuell
-        noch auf b3nn3t.
-
-        Vor der Veröffentlichung bitte
-        durch den Camou-Link ersetzen.
-      -->
-
-      <div
-        class="spotify-modal"
-        id="spotify-modal"
-        hidden
-        role="dialog"
-        aria-modal="true"
-        aria-label="Spotify-Musikplayer"
-      >
-
-        <div
-          class="spotify-modal-backdrop"
-          data-close-spotify
-        ></div>
-
-        <div
-          class="spotify-modal-panel"
-          role="document"
-        >
-
-          <div class="spotify-modal-header">
-
-            <span>
-              CAMOU / MUSIK
-            </span>
-
-            <button
-              type="button"
-              id="spotify-modal-close"
-              aria-label="Spotify-Fenster schliessen"
-            >
-              &times;
-            </button>
-
-          </div>
-
-          <iframe
-            id="spotify-modal-player"
-            title="Spotify Musikplayer"
-            data-src="https://open.spotify.com/embed/artist/7pajHvUWNCnOPhDPyH4M6x?theme=0"
-            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-            loading="lazy"
-          ></iframe>
-
-        </div>
-
-      </div>
-
-      <!-- ZOOM CONTROLS -->
-      <div
-        class="zoom-controls"
-        aria-label="Zoom"
-      >
-
-        <button
-          id="zoom-in"
-          aria-label="Vergrössern"
-        >
-          +
-        </button>
-
-        <button
-          id="zoom-out"
-          aria-label="Verkleinern"
-        >
-          −
-        </button>
-
-        <button
-          id="zoom-reset"
-          aria-label="Zoom zurücksetzen"
-        >
-          ↺
-        </button>
-
-      </div>
-
-      <!-- INTERACTION HINT -->
-      <div
-        class="interaction-hint"
-        id="hint"
-      >
-
-        <span class="hint-dot"></span>
-
-        DRAG TO EXPLORE
-
-      </div>
-
-      <!-- SECTION INDICATOR -->
+      <div class="interaction-hint" id="hint"><span class="hint-dot"></span> DRAG TO EXPLORE</div>
       <div class="section-indicator">
-
-        <span id="current-section">
-          HOME
-        </span>
-
+        <span id="current-section">HOME</span>
         <span class="indicator-line"></span>
-
-        <span id="section-number">
-          01 / 05
-        </span>
-
+        <span id="section-number">01 / 05</span>
       </div>
-
     </section>
 
-    <!-- FOOTER -->
     <footer class="footer">
-
-      <a
-        class="footer-impressum"
-        href="impressum.html"
-      >
-        Impressum
-      </a>
-
-      <span class="footer-signature">
-        b3nn3t — independent artist
-      </span>
-
+      <span>camou — independent artist / Switzerland</span>
+      <div class="footer-links">
+        <a href="#" id="instagram-link">Instagram</a>
+        <a href="#" id="spotify-link">Spotify</a>
+        <a href="mailto:camou.kontakt@gmail.com">Contact ↗</a>
+      </div>
     </footer>
-
   </main>
-
 </body>
 </html>
